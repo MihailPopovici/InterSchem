@@ -134,6 +134,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\test.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="external\include\raylib.h" />
