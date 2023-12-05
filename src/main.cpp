@@ -1,26 +1,26 @@
 #include <raylib.h>
 
 #include "codeComponents.h"
+#include "uiComponents.h"
 
 int main() {
 	InitWindow(800, 600, "Interschem");
 
-	StartNode* startNode = NewStartNode();
-	SetLabel(startNode, "START");
-	startNode->x = 5;
-	startNode->y = 5;
-	startNode->width = 100;
-	startNode->height = 20;
+	Button* test = NewButton();
+	SetButtonLabel(test, "TEST", 24, 5);
+	SetButtonColors(test, GREEN, RED);
+	SetButtonPosition(test, 10, 10);
 
 	while (!WindowShouldClose()) {
 		// update data
-
+		if (IsKeyPressed(KEY_SPACE)) {
+			SetButtonPosition(test, GetMouseX(), GetMouseY());
+		}
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 		// render on screen
 
-		DrawRectangle(startNode->x, startNode->y, startNode->width, startNode->height, GRAY);
-		DrawText(startNode->label, startNode->x, startNode->y, 20.0f, WHITE);
+		DrawButton(test);
 
 		EndDrawing();
 	}
