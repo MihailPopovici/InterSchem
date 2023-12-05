@@ -8,14 +8,17 @@ int main() {
 
 	Button* test = NewButton();
 	SetButtonLabel(test, "TEST", 24, 5);
-	SetButtonColors(test, GREEN, RED);
+	SetButtonColors(test, GREEN, WHITE);
 	SetButtonPosition(test, 10, 10);
 
+	SetTargetFPS(60);
 	while (!WindowShouldClose()) {
 		// update data
-		if (IsKeyPressed(KEY_SPACE)) {
-			SetButtonPosition(test, GetMouseX(), GetMouseY());
+		
+		if (IsButtonClicked(test)) {
+			OnButtonClick(test);
 		}
+
 		BeginDrawing();
 		ClearBackground(RAYWHITE);
 		// render on screen
