@@ -12,22 +12,23 @@ int main() {
 	SetStartNodePosition(start, 100, 100);
 	SetStartNodeSize(start, 5, 20);
 
-	StartNode* start2 = NewStartNode(globalID);
-	SetStartNodePosition(start2, 500, 50);
-	SetStartNodeSize(start2, 5, 20);
-
 	StopNode* stop = NewStopNode(globalID);
 	SetStopNodePosition(stop, 300, 300);
 	SetStopNodeSize(stop, 5, 20);
 
-	StopNode* stop2 = NewStopNode(globalID);
-	SetStopNodePosition(stop2, 5, 200);
-	SetStopNodeSize(stop2, 5, 20);
+	ReadNode* read = NewReadNode(globalID);
+	SetReadNodePosition(read, 150, 150);
+	SetReadNodeSize(read, 5, 20);
+
+	WriteNode* write = NewWriteNode(globalID);
+	SetWriteNodePosition(write, 200, 200);
+	SetWriteNodeSize(write, 5, 20);
 
 	unsigned nLinks = 0;
 	Link links[16];
-	links[0] = NewLink(start, stop, nLinks);
-	links[1] = NewLink(start2, stop2, nLinks);
+	links[0] = NewLink(start, read, nLinks);
+	links[1] = NewLink(read, write, nLinks);
+	links[2] = NewLink(write, stop, nLinks);
 
 	SetTargetFPS(60);
 	while (!WindowShouldClose()) {
@@ -38,9 +39,9 @@ int main() {
 		// render on screen
 
 		DrawStartNode(start);
-		DrawStartNode(start2);
+		DrawReadNode(read);
+		DrawWriteNode(write);
 		DrawStopNode(stop);
-		DrawStopNode(stop2);
 		for (unsigned i = 0; i < nLinks; i++) {
 			DrawLink(links[i]);
 		}
