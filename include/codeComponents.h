@@ -26,7 +26,7 @@ struct StartNode {
 struct StopNode {
 	char* label;
 	int fontSize, padding;
-	float x, y, width, height; // TODO: float or int?
+	float x, y, width, height; 
 	Pin inPin;
 };
 
@@ -47,7 +47,11 @@ struct WriteNode {
 };
 
 struct AssignNode {
-
+	char* label;
+	int fontSize, padding;
+	float x, y, width, height;
+	Pin inPin;
+	Pin outPin;
 };
 
 struct Decision {
@@ -244,6 +248,59 @@ void DrawWriteNode(WriteNode* node) {
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
 
+AssignNode* NewAssignNode(unsigned& globalPinID) {
+	AssignNode* p = new AssignNode;
+	char* temp = new char[6];
+	strcpy(temp, "Assign");
+	p->label = temp;
+	p->fontSize = 0;
+	p->padding = 0;
+
+	p->x = 0.0f;
+	p->y = 0.0f;
+	p->width = 0.0f;
+	p->height = 0.0f;
+
+	p->inPin.id = globalPinID++;
+	p->inPin.x = 0.0f;
+	p->inPin.y = 0.0f;
+	p->inPin.radius = PIN_RADIUS;
+	p->outPin.id = globalPinID++;
+	p->outPin.x = 0.0f;
+	p->outPin.y = 0.0f;
+	p->outPin.radius = PIN_RADIUS;
+
+	return p;
+}
+void SetAssignNodeSize(AssignNode* node, int padding, int fontSize) {
+	node->padding = padding;
+	node->fontSize = fontSize;
+	node->width = MeasureText(node->label, fontSize) + 2 * padding;
+	node->height = fontSize + 2 * padding;
+
+	node->inPin.x = node->x + node->width / 2.0f;
+	node->inPin.y = node->y;
+
+	node->outPin.x = node->x + node->width / 2.0f;
+	node->outPin.y = node->y + node->height;
+}
+void SetAssignNodePosition(AssignNode* node, float x, float y) {
+	node->x = x;
+	node->y = y;
+
+	node->inPin.x = node->x + node->width / 2.0f;
+	node->inPin.y = node->y;
+
+	node->outPin.x = node->x + node->width / 2.0f;
+	node->outPin.y = node->y + node->height;
+}
+void DrawAssignNode(AssignNode* node) {
+	DrawRectangle(node->x, node->y, node->width, node->height, ORANGE);
+	DrawText(node->label, node->x + node->padding, node->y + node->padding, node->fontSize, BLACK);
+	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
+	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
+}
+
 Link NewLink(StartNode* start, StopNode* stop, unsigned& nLinks) {
 	Link link;
 	link.start = &start->outPin;
@@ -283,6 +340,20 @@ Link NewLink(ReadNode* read, WriteNode* write, unsigned& nLinks) {
 	Link link;
 	link.start = &read->outPin;
 	link.end = &write->inPin;
+	nLinks++;
+	return link;
+}
+Link NewLink(WriteNode* write, AssignNode* assign, unsigned& nLinks) {
+	Link link;
+	link.start = &write->outPin;
+	link.end = &assign->inPin;
+	nLinks++;
+	return link;
+}
+Link NewLink(AssignNode* assign, StopNode* stop, unsigned& nLinks) {
+	Link link;
+	link.start = &assign->outPin;
+	link.end = &stop->inPin;
 	nLinks++;
 	return link;
 }

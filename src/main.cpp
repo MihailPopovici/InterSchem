@@ -3,7 +3,6 @@
 #include "codeComponents.h"
 #include "uiComponents.h"
 
-#include <iostream>
 
 int main() {
 	InitWindow(1020, 800, "Interschem");
@@ -17,22 +16,27 @@ int main() {
 	ReadNode* clickedReadNode = nullptr;
 	int clickedNodeID = -1;
 	ReadNode* read = NewReadNode(globalPinID);
-	SetReadNodePosition(read, 150, 150);
+	SetReadNodePosition(read, 200, 200);
 	SetReadNodeSize(read, 5, 20);
 
 	WriteNode* write = NewWriteNode(globalPinID);
-	SetWriteNodePosition(write, 200, 200);
+	SetWriteNodePosition(write, 400, 400);
 	SetWriteNodeSize(write, 5, 20);
 
+	AssignNode* assign = NewAssignNode(globalPinID);
+	SetAssignNodePosition(assign, 600, 600);
+	SetAssignNodeSize(assign, 5, 20);
+
 	StopNode* stop = NewStopNode(globalPinID);
-	SetStopNodePosition(stop, 300, 300);
+	SetStopNodePosition(stop, 700, 700);
 	SetStopNodeSize(stop, 5, 20);
 
 	unsigned nLinks = 0;
 	Link links[16];
 	links[0] = NewLink(start, read, nLinks);
 	links[1] = NewLink(read, write, nLinks);
-	links[2] = NewLink(write, stop, nLinks);
+	links[2] = NewLink(write, assign, nLinks);
+	links[3] = NewLink(assign, stop, nLinks);
 
 	SetTargetFPS(60);
 	while (!WindowShouldClose()) {
@@ -62,6 +66,7 @@ int main() {
 		DrawStartNode(start);
 		DrawReadNode(read);
 		DrawWriteNode(write);
+		DrawAssignNode(assign);
 		DrawStopNode(stop);
 		for (unsigned i = 0; i < nLinks; i++) {
 			DrawLink(links[i]);
