@@ -3,26 +3,30 @@
 #include "codeComponents.h"
 #include "uiComponents.h"
 
+#include <iostream>
+
 int main() {
 	InitWindow(1020, 800, "Interschem");
 
-	unsigned globalID = 0;
+	unsigned globalPinID = 0, globalNodeID = 0;
 
-	StartNode* start = NewStartNode(globalID);
+	StartNode* start = NewStartNode(globalPinID);
 	SetStartNodePosition(start, 100, 100);
 	SetStartNodeSize(start, 5, 20);
 
-	StopNode* stop = NewStopNode(globalID);
-	SetStopNodePosition(stop, 300, 300);
-	SetStopNodeSize(stop, 5, 20);
-
-	ReadNode* read = NewReadNode(globalID);
+	ReadNode* clickedReadNode = nullptr;
+	int clickedNodeID = -1;
+	ReadNode* read = NewReadNode(globalPinID);
 	SetReadNodePosition(read, 150, 150);
 	SetReadNodeSize(read, 5, 20);
 
-	WriteNode* write = NewWriteNode(globalID);
+	WriteNode* write = NewWriteNode(globalPinID);
 	SetWriteNodePosition(write, 200, 200);
 	SetWriteNodeSize(write, 5, 20);
+
+	StopNode* stop = NewStopNode(globalPinID);
+	SetStopNodePosition(stop, 300, 300);
+	SetStopNodeSize(stop, 5, 20);
 
 	unsigned nLinks = 0;
 	Link links[16];
@@ -33,6 +37,23 @@ int main() {
 	SetTargetFPS(60);
 	while (!WindowShouldClose()) {
 		// update data
+		Vector2 mPos = GetMousePosition();
+		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+			if ((mPos.x >= read->x && mPos.x <= read->x + read->width) && (mPos.y >= read->y && mPos.y <= read->y + read->height)) {
+				clickedReadNode = read;
+			}
+			else {
+				clickedReadNode = nullptr;
+			}
+		}
+		else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
+			if (clickedReadNode != nullptr) {
+				SetReadNodePosition(clickedReadNode, mPos.x, mPos.y);
+			}
+		}
+		else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+			clickedReadNode = nullptr;
+		}
 
 		BeginDrawing();
 		ClearBackground(BLACK);

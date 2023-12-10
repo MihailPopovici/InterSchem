@@ -54,7 +54,7 @@ struct Decision {
 
 };
 
-StartNode* NewStartNode(unsigned& globalID) {
+StartNode* NewStartNode(unsigned& globalPinID) {
 	StartNode* p = new StartNode;
 	char* temp = new char[6];
 	strcpy(temp, "Start");
@@ -67,7 +67,7 @@ StartNode* NewStartNode(unsigned& globalID) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->outPin.id = globalID++;
+	p->outPin.id = globalPinID++;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
@@ -86,6 +86,9 @@ void SetStartNodeSize(StartNode* node, int padding, int fontSize) {
 void SetStartNodePosition(StartNode* node, float x, float y) {
 	node->x = x;
 	node->y = y;
+
+	node->outPin.x = node->x + node->width / 2.0f;
+	node->outPin.y = node->y + node->height;
 }
 void DrawStartNode(StartNode* node) {
 	DrawRectangle(node->x, node->y, node->width, node->height, DARKGREEN);
@@ -93,7 +96,7 @@ void DrawStartNode(StartNode* node) {
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
 
-StopNode* NewStopNode(unsigned& globalID) {
+StopNode* NewStopNode(unsigned& globalPinID) {
 	StopNode* p = new StopNode;
 	char* temp = new char[5];
 	strcpy(temp, "Stop");
@@ -106,7 +109,7 @@ StopNode* NewStopNode(unsigned& globalID) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = globalID++;
+	p->inPin.id = globalPinID++;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
@@ -125,6 +128,9 @@ void SetStopNodeSize(StopNode* node, int padding, int fontSize) {
 void SetStopNodePosition(StopNode* node, float x, float y) {
 	node->x = x;
 	node->y = y;
+
+	node->inPin.x = node->x + node->width / 2.0f;
+	node->inPin.y = node->y;
 }
 void DrawStopNode(StopNode* node) {
 	DrawRectangle(node->x, node->y, node->width, node->height, RED);
@@ -132,7 +138,7 @@ void DrawStopNode(StopNode* node) {
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 }
 
-ReadNode* NewReadNode(unsigned& globalID) {
+ReadNode* NewReadNode(unsigned& globalPinID) {
 	ReadNode* p = new ReadNode;
 	char* temp = new char[5];
 	strcpy(temp, "Read");
@@ -145,11 +151,11 @@ ReadNode* NewReadNode(unsigned& globalID) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = globalID++;
+	p->inPin.id = globalPinID++;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
-	p->outPin.id = globalID++;
+	p->outPin.id = globalPinID++;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
@@ -171,6 +177,12 @@ void SetReadNodeSize(ReadNode* node, int padding, int fontSize) {
 void SetReadNodePosition(ReadNode* node, float x, float y) {
 	node->x = x;
 	node->y = y;
+
+	node->inPin.x = node->x + node->width / 2.0f;
+	node->inPin.y = node->y;
+
+	node->outPin.x = node->x + node->width / 2.0f;
+	node->outPin.y = node->y + node->height;
 }
 void DrawReadNode(ReadNode* node) {
 	DrawRectangle(node->x, node->y, node->width, node->height, YELLOW);
@@ -179,7 +191,7 @@ void DrawReadNode(ReadNode* node) {
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
 
-WriteNode* NewWriteNode(unsigned& globalID) {
+WriteNode* NewWriteNode(unsigned& globalPinID) {
 	WriteNode* p = new WriteNode;
 	char* temp = new char[6];
 	strcpy(temp, "Write");
@@ -192,11 +204,11 @@ WriteNode* NewWriteNode(unsigned& globalID) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = globalID++;
+	p->inPin.id = globalPinID++;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
-	p->outPin.id = globalID++;
+	p->outPin.id = globalPinID++;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
@@ -218,6 +230,12 @@ void SetWriteNodeSize(WriteNode* node, int padding, int fontSize) {
 void SetWriteNodePosition(WriteNode* node, float x, float y) {
 	node->x = x;
 	node->y = y;
+
+	node->inPin.x = node->x + node->width / 2.0f;
+	node->inPin.y = node->y;
+
+	node->outPin.x = node->x + node->width / 2.0f;
+	node->outPin.y = node->y + node->height;
 }
 void DrawWriteNode(WriteNode* node) {
 	DrawRectangle(node->x, node->y, node->width, node->height, SKYBLUE);
