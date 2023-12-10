@@ -6,7 +6,6 @@ struct Button {
 	int fontSize, padding;
 	Color bgColor, textColor;
 	float x, y, width, height;
-	void (*func)();
 };
 
 struct Window {
@@ -34,7 +33,6 @@ Button* NewButton() {
 	p->y = -1;
 	p->width = -1;
 	p->height = -1;
-	p->func = nullptr;
 	return p;
 }
 
@@ -57,10 +55,6 @@ void SetButtonPosition(Button* p, float x, float y) {
 	p->y = y;
 }
 
-void SetButtonOnClick(Button* p, void (*func)()) {
-	p->func = func;
-}
-
 bool IsButtonClicked(Button* p) {
 	int mx = GetMouseX(), my = GetMouseY();
 	return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && mx >= p->x && mx <= p->x + p->width && my >= p->y && my <= p->y + p->height;
@@ -69,8 +63,4 @@ bool IsButtonClicked(Button* p) {
 void DrawButton(Button* p) {
 	DrawRectangle(p->x, p->y, p->width, p->height, p->bgColor);
 	DrawText(p->label, p->x + p->padding, p->y + p->padding, p->fontSize, p->textColor);
-}
-
-void OnButtonClick(Button* p) {
-	p->func();
 }
