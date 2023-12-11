@@ -17,6 +17,7 @@ struct Link {
 };
 
 struct StartNode {
+	int id;
 	char* label;
 	int fontSize, padding;
 	float x, y, width, height; // TODO: float or int?
@@ -24,6 +25,7 @@ struct StartNode {
 };
 
 struct StopNode {
+	int id;
 	char* label;
 	int fontSize, padding;
 	float x, y, width, height; 
@@ -31,6 +33,7 @@ struct StopNode {
 };
 
 struct ReadNode {
+	int id;
 	char* label;
 	int fontSize, padding;
 	float x, y, width, height;
@@ -39,6 +42,7 @@ struct ReadNode {
 };
 
 struct WriteNode {
+	int id;
 	char* label;
 	int fontSize, padding;
 	float x, y, width, height;
@@ -47,6 +51,7 @@ struct WriteNode {
 };
 
 struct AssignNode {
+	int id;
 	char* label;
 	int fontSize, padding;
 	float x, y, width, height;
@@ -58,8 +63,9 @@ struct Decision {
 
 };
 
-StartNode* NewStartNode(unsigned& globalPinID) {
+StartNode* NewStartNode(int& globalNodeID ,int& globalPinID) {
 	StartNode* p = new StartNode;
+	p->id = globalNodeID++;
 	char* temp = new char[6];
 	strcpy(temp, "Start");
 	p->label = temp;
@@ -100,8 +106,9 @@ void DrawStartNode(StartNode* node) {
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
 
-StopNode* NewStopNode(unsigned& globalPinID) {
+StopNode* NewStopNode(int& globalNodeID, int& globalPinID) {
 	StopNode* p = new StopNode;
+	p->id = globalNodeID++;
 	char* temp = new char[5];
 	strcpy(temp, "Stop");
 	p->label = temp;
@@ -142,8 +149,9 @@ void DrawStopNode(StopNode* node) {
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 }
 
-ReadNode* NewReadNode(unsigned& globalPinID) {
+ReadNode* NewReadNode(int& globalNodeID, int& globalPinID) {
 	ReadNode* p = new ReadNode;
+	p->id = globalNodeID++;
 	char* temp = new char[5];
 	strcpy(temp, "Read");
 	p->label = temp;
@@ -195,8 +203,9 @@ void DrawReadNode(ReadNode* node) {
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
 
-WriteNode* NewWriteNode(unsigned& globalPinID) {
+WriteNode* NewWriteNode(int& globalNodeID, int& globalPinID) {
 	WriteNode* p = new WriteNode;
+	p->id = globalNodeID++;
 	char* temp = new char[6];
 	strcpy(temp, "Write");
 	p->label = temp;
@@ -248,9 +257,10 @@ void DrawWriteNode(WriteNode* node) {
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
 
-AssignNode* NewAssignNode(unsigned& globalPinID) {
+AssignNode* NewAssignNode(int& globalNodeID, int& globalPinID) {
 	AssignNode* p = new AssignNode;
-	char* temp = new char[6];
+	p->id = globalNodeID++;
+	char* temp = new char[7];
 	strcpy(temp, "Assign");
 	p->label = temp;
 	p->fontSize = 0;
