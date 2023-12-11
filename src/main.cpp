@@ -4,78 +4,98 @@
 #include "uiComponents.h"
 #include "execFunc.h"
 
-
 int main() {
 	InitWindow(1020, 800, "Interschem");
 
 	int globalPinID = 0, globalNodeID = 0;
-	int clickedNodeID = -1;
+	ClickedNodeInfo cNode;
+	cNode.id = -1;
+	cNode.index = -1;
+	cNode.type = none;
 
-	StartNode* start = NewStartNode(globalNodeID, globalPinID);
-	SetStartNodePosition(start, 100, 100);
-	SetStartNodeSize(start, 5, 20);
+	StartNode* startNode = NewStartNode(globalNodeID, globalPinID);
+	SetStartNodePosition(startNode, 100, 100);
+	SetStartNodeSize(startNode, 5, 20);
 
 	unsigned nReadNodes = 0;
-	ReadNode* readNodes[16]={0};
+	ReadNode* readNodes[16] = { 0 };
 	readNodes[0] = NewReadNode(globalNodeID, globalPinID);
 	SetReadNodePosition(readNodes[0], 200, 200);
 	SetReadNodeSize(readNodes[0], 5, 20);
 	nReadNodes++;
-	readNodes[1] = NewReadNode(globalNodeID, globalPinID);
-	SetReadNodePosition(readNodes[1], 300, 200);
-	SetReadNodeSize(readNodes[1], 5, 20);
-	nReadNodes++;
-	readNodes[2] = NewReadNode(globalNodeID, globalPinID);
-	SetReadNodePosition(readNodes[2], 400, 200);
-	SetReadNodeSize(readNodes[2], 5, 20);
-	nReadNodes++;
 
-	WriteNode* write = NewWriteNode(globalNodeID, globalPinID);
-	SetWriteNodePosition(write, 400, 400);
-	SetWriteNodeSize(write, 5, 20);
+	unsigned nWriteNodes = 0;
+	WriteNode* writeNodes[16] = { 0 };
+	writeNodes[0] = NewWriteNode(globalNodeID, globalPinID);
+	SetWriteNodePosition(writeNodes[0], 400, 400);
+	SetWriteNodeSize(writeNodes[0], 5, 20);
+	nWriteNodes++;
 
-	AssignNode* assign = NewAssignNode(globalNodeID, globalPinID);
-	SetAssignNodePosition(assign, 600, 600);
-	SetAssignNodeSize(assign, 5, 20);
+	unsigned nAssignNodes = 0;
+	AssignNode* assignNodes[16] = { 0 };
+	assignNodes[0] = NewAssignNode(globalNodeID, globalPinID);
+	SetAssignNodePosition(assignNodes[0], 600, 600);
+	SetAssignNodeSize(assignNodes[0], 5, 20);
+	nAssignNodes++;
 
-	StopNode* stop = NewStopNode(globalNodeID, globalPinID);
-	SetStopNodePosition(stop, 700, 700);
-	SetStopNodeSize(stop, 5, 20);
+	unsigned nStopNodes = 0;
+	StopNode* stopNodes[16] = { 0 };
+	stopNodes[0] = NewStopNode(globalNodeID, globalPinID);
+	SetStopNodePosition(stopNodes[0], 700, 700);
+	SetStopNodeSize(stopNodes[0], 5, 20);
+	nStopNodes++;
 
 	unsigned nLinks = 0;
 	Link links[16];
-	links[0] = NewLink(start, readNodes[0], nLinks);
-	links[1] = NewLink(readNodes[0], write, nLinks);
-	links[2] = NewLink(write, assign, nLinks);
-	links[3] = NewLink(assign, stop, nLinks);
+	links[0] = NewLink(startNode, readNodes[0], nLinks);
+	links[1] = NewLink(readNodes[0], writeNodes[0], nLinks);
+	links[2] = NewLink(writeNodes[0], assignNodes[0], nLinks);
+	links[3] = NewLink(assignNodes[0], stopNodes[0], nLinks);
+	links[4] = NewLink(readNodes[0], stopNodes[0], nLinks);
+	//links[4] = NewLink(readNodes[0], decisionNodes[0], nLinks);
 
 	SetTargetFPS(60);
 	while (!WindowShouldClose()) {
 		// update data
-		Vector2 mPos = GetMousePosition();
+		
+		int mx = GetMouseX(), my = GetMouseY();
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-			clickedNodeID = GetClickedNodeID(mPos.x, mPos.y, clickedNodeID, readNodes);
+			GetClickedNodeID(cNode, mx, my, startNode, readNodes, writeNodes, assignNodes, stopNodes);
 		}
 		else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-			if (clickedNodeID != -1) {
-				SetReadNodePosition(readNodes[clickedNodeID], mPos.x, mPos.y);
+			if (cNode.id != -1) {
+				switch (cNode.type) {
+				case start: { SetStartNodePosition(startNode, mx, my); break; }
+				case read: { SetReadNodePosition(readNodes[cNode.index], mx, my); break; }
+				case write: { SetWriteNodePosition(writeNodes[cNode.index], mx, my); break; }
+				case assign: { SetAssignNodePosition(assignNodes[cNode.index], mx, my); break; }
+				//case decision: { SetDecisionNodePosition(decisionNodes[cNode.index], mx, my); break; }
+				case stop: { SetStopNodePosition(stopNodes[cNode.index], mx, my); break; }
+				default: break;
+				}
 			}
 		}
 		else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-			clickedNodeID = -1;
+			cNode.id = -1;
 		}
 
 		BeginDrawing();
 		ClearBackground(BLACK);
 		// render on screen
 
-		DrawStartNode(start);
+		DrawStartNode(startNode);
 		for (unsigned i = 0; i < nReadNodes; i++) {
 			DrawReadNode(readNodes[i]);
 		}
-		DrawWriteNode(write);
-		DrawAssignNode(assign);
-		DrawStopNode(stop);
+		for (unsigned i = 0; i < nWriteNodes; i++) {
+			DrawWriteNode(writeNodes[i]);
+		}
+		for (unsigned i = 0; i < nAssignNodes; i++) {
+			DrawAssignNode(assignNodes[i]);
+		}
+		for (unsigned i = 0; i < nStopNodes; i++) {
+			DrawStopNode(stopNodes[i]);
+		}
 		for (unsigned i = 0; i < nLinks; i++) {
 			DrawLink(links[i]);
 		}

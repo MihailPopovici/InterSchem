@@ -60,7 +60,13 @@ struct AssignNode {
 };
 
 struct Decision {
-
+	int id;
+	char* label;
+	int fontSize, padding;
+	float x, y, width, height;
+	Pin inPin;
+	Pin outPinTrue;
+	Pin outPinFalse;
 };
 
 StartNode* NewStartNode(int& globalNodeID ,int& globalPinID) {
