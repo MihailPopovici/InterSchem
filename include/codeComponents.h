@@ -5,6 +5,23 @@
 
 #define PIN_RADIUS 4.0f
 
+// TODO: ai grija sa nu iesi din vectori atunci cand adaugi un nod sau link
+
+enum NodeType {
+	none,
+	start,
+	read,
+	write,
+	assign,
+	decision,
+	stop
+};
+
+struct NodeInfo {
+	int id, index;
+	NodeType type;
+};
+
 struct Pin {
 	int id;
 	float x, y;
@@ -12,8 +29,13 @@ struct Pin {
 };
 
 struct Link {
-	Pin* start;
-	Pin* end;
+	Pin* from;
+	Pin* to;
+};
+
+struct NodeLinks {
+	unsigned nLinks = 0;
+	Link vec[16] = { 0 };
 };
 
 struct StartNode {
@@ -59,7 +81,7 @@ struct AssignNode {
 	Pin outPin;
 };
 
-struct Decision {
+struct DecisionNode {
 	int id;
 	char* label;
 	int fontSize, padding;
@@ -69,27 +91,27 @@ struct Decision {
 	Pin outPinFalse;
 };
 
-StartNode* NewStartNode(int& globalNodeID ,int& globalPinID) {
-	StartNode* p = new StartNode;
-	p->id = globalNodeID++;
-	char* temp = new char[6];
-	strcpy(temp, "Start");
-	p->label = temp;
-	p->fontSize = 0;
-	p->padding = 0;
+struct NodeArrays {
+	int globalPinID = 0, globalNodeID = 0;
 
-	p->x = 0.0f;
-	p->y = 0.0f;
-	p->width = 0.0f;
-	p->height = 0.0f;
+	StartNode* startNode = 0;
 
-	p->outPin.id = globalPinID++;
-	p->outPin.x = 0.0f;
-	p->outPin.y = 0.0f;
-	p->outPin.radius = PIN_RADIUS;
+	unsigned nReadNodes = 0;
+	ReadNode* readNodes[16] = { 0 };
 
-	return p;
-}
+	unsigned nWriteNodes = 0;
+	WriteNode* writeNodes[16] = { 0 };
+
+	unsigned nAssignNodes = 0;
+	AssignNode* assignNodes[16] = { 0 };
+
+	unsigned nDecisionNodes = 0;
+	DecisionNode* decisionNodes[16] = { 0 };
+
+	unsigned nStopNodes = 0;
+	StopNode* stopNodes[16] = { 0 };
+};
+
 void SetStartNodeSize(StartNode* node, int padding, int fontSize) {
 	node->padding = padding;
 	node->fontSize = fontSize;
@@ -111,12 +133,11 @@ void DrawStartNode(StartNode* node) {
 	DrawText(node->label, node->x + node->padding, node->y + node->padding, node->fontSize, WHITE);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
-
-StopNode* NewStopNode(int& globalNodeID, int& globalPinID) {
-	StopNode* p = new StopNode;
-	p->id = globalNodeID++;
-	char* temp = new char[5];
-	strcpy(temp, "Stop");
+StartNode* NewStartNode(int padding, int fontSize, float x, float y) {
+	StartNode* p = new StartNode;
+	p->id = 0;
+	char* temp = new char[6];
+	strcpy(temp, "Start");
 	p->label = temp;
 	p->fontSize = 0;
 	p->padding = 0;
@@ -126,13 +147,17 @@ StopNode* NewStopNode(int& globalNodeID, int& globalPinID) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = globalPinID++;
-	p->inPin.x = 0.0f;
-	p->inPin.y = 0.0f;
-	p->inPin.radius = PIN_RADIUS;
+	p->outPin.id = 0;
+	p->outPin.x = 0.0f;
+	p->outPin.y = 0.0f;
+	p->outPin.radius = PIN_RADIUS;
+
+	SetStartNodePosition(p, x, y);
+	SetStartNodeSize(p, padding, fontSize);
 
 	return p;
 }
+
 void SetStopNodeSize(StopNode* node, int padding, int fontSize) {
 	node->padding = padding;
 	node->fontSize = fontSize;
@@ -154,12 +179,11 @@ void DrawStopNode(StopNode* node) {
 	DrawText(node->label, node->x + node->padding, node->y + node->padding, node->fontSize, WHITE);
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 }
-
-ReadNode* NewReadNode(int& globalNodeID, int& globalPinID) {
-	ReadNode* p = new ReadNode;
-	p->id = globalNodeID++;
+StopNode* NewStopNode(int padding, int fontSize, float x, float y) {
+	StopNode* p = new StopNode;
+	p->id = 0;
 	char* temp = new char[5];
-	strcpy(temp, "Read");
+	strcpy(temp, "Stop");
 	p->label = temp;
 	p->fontSize = 0;
 	p->padding = 0;
@@ -169,17 +193,17 @@ ReadNode* NewReadNode(int& globalNodeID, int& globalPinID) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = globalPinID++;
+	p->inPin.id = 0;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
-	p->outPin.id = globalPinID++;
-	p->outPin.x = 0.0f;
-	p->outPin.y = 0.0f;
-	p->outPin.radius = PIN_RADIUS;
+
+	SetStopNodePosition(p, x, y);
+	SetStopNodeSize(p, padding, fontSize);
 
 	return p;
 }
+
 void SetReadNodeSize(ReadNode* node, int padding, int fontSize) {
 	node->padding = padding;
 	node->fontSize = fontSize;
@@ -208,12 +232,11 @@ void DrawReadNode(ReadNode* node) {
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
-
-WriteNode* NewWriteNode(int& globalNodeID, int& globalPinID) {
-	WriteNode* p = new WriteNode;
-	p->id = globalNodeID++;
-	char* temp = new char[6];
-	strcpy(temp, "Write");
+ReadNode* NewReadNode(int padding, int fontSize, float x, float y) {
+	ReadNode* p = new ReadNode;
+	p->id = 0;
+	char* temp = new char[5];
+	strcpy(temp, "Read");
 	p->label = temp;
 	p->fontSize = 0;
 	p->padding = 0;
@@ -223,17 +246,21 @@ WriteNode* NewWriteNode(int& globalNodeID, int& globalPinID) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = globalPinID++;
+	p->inPin.id = 0;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
-	p->outPin.id = globalPinID++;
+	p->outPin.id = 0;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
 
+	SetReadNodePosition(p, x, y);
+	SetReadNodeSize(p, padding, fontSize);
+
 	return p;
 }
+
 void SetWriteNodeSize(WriteNode* node, int padding, int fontSize) {
 	node->padding = padding;
 	node->fontSize = fontSize;
@@ -262,12 +289,11 @@ void DrawWriteNode(WriteNode* node) {
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
-
-AssignNode* NewAssignNode(int& globalNodeID, int& globalPinID) {
-	AssignNode* p = new AssignNode;
-	p->id = globalNodeID++;
-	char* temp = new char[7];
-	strcpy(temp, "Assign");
+WriteNode* NewWriteNode(int padding, int fontSize, float x, float y) {
+	WriteNode* p = new WriteNode;
+	p->id = 0;
+	char* temp = new char[6];
+	strcpy(temp, "Write");
 	p->label = temp;
 	p->fontSize = 0;
 	p->padding = 0;
@@ -277,17 +303,21 @@ AssignNode* NewAssignNode(int& globalNodeID, int& globalPinID) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = globalPinID++;
+	p->inPin.id = 0;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
-	p->outPin.id = globalPinID++;
+	p->outPin.id = 0;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
 
+	SetWriteNodePosition(p, x, y);
+	SetWriteNodeSize(p, padding, fontSize);
+
 	return p;
 }
+
 void SetAssignNodeSize(AssignNode* node, int padding, int fontSize) {
 	node->padding = padding;
 	node->fontSize = fontSize;
@@ -316,63 +346,157 @@ void DrawAssignNode(AssignNode* node) {
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 }
+AssignNode* NewAssignNode(int padding, int fontSize, float x, float y) {
+	AssignNode* p = new AssignNode;
+	p->id = 0;
+	char* temp = new char[7];
+	strcpy(temp, "Assign");
+	p->label = temp;
+	p->fontSize = 0;
+	p->padding = 0;
 
-Link NewLink(StartNode* start, StopNode* stop, unsigned& nLinks) {
-	Link link;
-	link.start = &start->outPin;
-	link.end = &stop->inPin;
-	nLinks++;
-	return link;
+	p->x = 0.0f;
+	p->y = 0.0f;
+	p->width = 0.0f;
+	p->height = 0.0f;
+
+	p->inPin.id = 0;
+	p->inPin.x = 0.0f;
+	p->inPin.y = 0.0f;
+	p->inPin.radius = PIN_RADIUS;
+	p->outPin.id = 0;
+	p->outPin.x = 0.0f;
+	p->outPin.y = 0.0f;
+	p->outPin.radius = PIN_RADIUS;
+
+	SetAssignNodePosition(p, x, y);
+	SetAssignNodeSize(p, padding, fontSize);
+
+	return p;
 }
-Link NewLink(StartNode* start, ReadNode* read, unsigned& nLinks) {
-	Link link;
-	link.start = &start->outPin;
-	link.end = &read->inPin;
-	nLinks++;
-	return link;
+
+void SetDecisionNodeSize(DecisionNode* node, int padding, int fontSize) {
+	node->padding = padding;
+	node->fontSize = fontSize;
+	node->width = MeasureText(node->label, fontSize) + 2 * padding;
+	node->height = fontSize + 2 * padding;
+
+	node->inPin.x = node->x + node->width / 2.0f;
+	node->inPin.y = node->y;
+
+	node->outPinTrue.x = node->x;
+	node->outPinTrue.y = node->y + node->height / 2.0f;
+
+	node->outPinFalse.x = node->x + node->width;
+	node->outPinFalse.y = node->y + node->height / 2.0f;
 }
-Link NewLink(ReadNode* read, StopNode* stop, unsigned& nLinks) {
-	Link link;
-	link.start = &read->outPin;
-	link.end = &stop->inPin;
-	nLinks++;
-	return link;
+void SetDecisionNodePosition(DecisionNode* node, float x, float y) {
+	node->x = x;
+	node->y = y;
+
+	node->inPin.x = node->x + node->width / 2.0f;
+	node->inPin.y = node->y;
+
+	node->outPinTrue.x = node->x;
+	node->outPinTrue.y = node->y + node->height / 2.0f;
+
+	node->outPinFalse.x = node->x + node->width;
+	node->outPinFalse.y = node->y + node->height / 2.0f;
 }
-Link NewLink(StartNode* start, WriteNode* write, unsigned& nLinks) {
-	Link link;
-	link.start = &start->outPin;
-	link.end = &write->inPin;
-	nLinks++;
-	return link;
+void DrawDecisionNode(DecisionNode* node) {
+	DrawRectangle(node->x, node->y, node->width, node->height, PURPLE);
+	DrawText(node->label, node->x + node->padding, node->y + node->padding, node->fontSize, WHITE);
+	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
+	DrawCircle(node->outPinTrue.x, node->outPinTrue.y, node->outPinTrue.radius, GRAY);
+	DrawCircle(node->outPinFalse.x, node->outPinFalse.y, node->outPinFalse.radius, GRAY);
 }
-Link NewLink(WriteNode* write, StopNode* stop, unsigned& nLinks) {
-	Link link;
-	link.start = &write->outPin;
-	link.end = &stop->inPin;
-	nLinks++;
-	return link;
+DecisionNode* NewDecisionNode(int padding, int fontSize, float x, float y) {
+	DecisionNode* p = new DecisionNode;
+	p->id = 0;
+	char* temp = new char[9];
+	strcpy(temp, "Decision");
+	p->label = temp;
+	p->fontSize = 0;
+	p->padding = 0;
+
+	p->x = 0.0f;
+	p->y = 0.0f;
+	p->width = 0.0f;
+	p->height = 0.0f;
+
+	p->inPin.id = 0;
+	p->inPin.x = 0.0f;
+	p->inPin.y = 0.0f;
+	p->inPin.radius = PIN_RADIUS;
+	p->outPinTrue.id = 0;
+	p->outPinTrue.x = 0.0f;
+	p->outPinTrue.y = 0.0f;
+	p->outPinTrue.radius = PIN_RADIUS;
+	p->outPinFalse.id = 0;
+	p->outPinFalse.x = 0.0f;
+	p->outPinFalse.y = 0.0f;
+	p->outPinFalse.radius = PIN_RADIUS;
+
+	SetDecisionNodePosition(p, x, y);
+	SetDecisionNodeSize(p, padding, fontSize);
+
+	return p;
 }
-Link NewLink(ReadNode* read, WriteNode* write, unsigned& nLinks) {
-	Link link;
-	link.start = &read->outPin;
-	link.end = &write->inPin;
-	nLinks++;
-	return link;
+
+void NewNode(NodeArrays& nodes, NodeType type, int padding, int fontSize, float x, float y) {
+	switch (type) {
+	case start: 
+		nodes.startNode = NewStartNode(padding, fontSize, x, y);
+		nodes.startNode->id = nodes.globalNodeID++;
+		nodes.startNode->outPin.id = nodes.globalPinID++;
+		break;
+	case stop:
+		nodes.stopNodes[nodes.nStopNodes] = NewStopNode(padding, fontSize, x, y);
+		nodes.stopNodes[nodes.nStopNodes]->id = nodes.globalNodeID++;
+		nodes.stopNodes[nodes.nStopNodes]->inPin.id = nodes.globalPinID++;
+		nodes.nStopNodes++;
+		break;
+	case read:
+		nodes.readNodes[nodes.nReadNodes] = NewReadNode(padding, fontSize, x, y);
+		nodes.readNodes[nodes.nReadNodes]->id = nodes.globalNodeID++;
+		nodes.readNodes[nodes.nReadNodes]->inPin.id = nodes.globalPinID++;
+		nodes.readNodes[nodes.nReadNodes]->outPin.id = nodes.globalPinID++;
+		nodes.nReadNodes++;
+		break;
+	case write: 
+		nodes.writeNodes[nodes.nWriteNodes] = NewWriteNode(padding, fontSize, x, y);
+		nodes.writeNodes[nodes.nWriteNodes]->id = nodes.globalNodeID++;
+		nodes.writeNodes[nodes.nWriteNodes]->inPin.id = nodes.globalPinID++;
+		nodes.writeNodes[nodes.nWriteNodes]->outPin.id = nodes.globalPinID++;
+		nodes.nWriteNodes++;
+		break;
+	case assign:
+		nodes.assignNodes[nodes.nAssignNodes] = NewAssignNode(padding, fontSize, x, y);
+		nodes.assignNodes[nodes.nAssignNodes]->id = nodes.globalNodeID++;
+		nodes.assignNodes[nodes.nAssignNodes]->inPin.id = nodes.globalPinID++;
+		nodes.assignNodes[nodes.nAssignNodes]->outPin.id = nodes.globalPinID++;
+		nodes.nAssignNodes++;
+		break;
+	case decision:
+		nodes.decisionNodes[nodes.nDecisionNodes] = NewDecisionNode(padding, fontSize, x, y);
+		nodes.decisionNodes[nodes.nDecisionNodes]->id = nodes.globalNodeID++;
+		nodes.decisionNodes[nodes.nDecisionNodes]->inPin.id = nodes.globalPinID++;
+		nodes.decisionNodes[nodes.nDecisionNodes]->outPinTrue.id = nodes.globalPinID++;
+		nodes.decisionNodes[nodes.nDecisionNodes]->outPinFalse.id = nodes.globalPinID++;
+		nodes.nDecisionNodes++;
+		break;
+	default:
+		break;
+	}
 }
-Link NewLink(WriteNode* write, AssignNode* assign, unsigned& nLinks) {
+
+void NewLink(NodeLinks& links, Pin& from, Pin& to) {
 	Link link;
-	link.start = &write->outPin;
-	link.end = &assign->inPin;
-	nLinks++;
-	return link;
-}
-Link NewLink(AssignNode* assign, StopNode* stop, unsigned& nLinks) {
-	Link link;
-	link.start = &assign->outPin;
-	link.end = &stop->inPin;
-	nLinks++;
-	return link;
+	link.from = &from;
+	link.to = &to;
+	links.vec[links.nLinks] = link;
+	links.nLinks++;
 }
 void DrawLink(Link link) {
-	DrawLineEx({ link.start->x, link.start->y }, { link.end->x, link.end->y }, 2.0f, GRAY);
+	DrawLineEx({ link.from->x, link.from->y }, { link.to->x, link.to->y }, 2.0f, GRAY);
 }
