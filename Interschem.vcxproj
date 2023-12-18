@@ -133,16 +133,32 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\assignNode.cpp" />
+    <ClCompile Include="src\decisionNode.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\pin.cpp" />
+    <ClCompile Include="src\readNode.cpp" />
+    <ClCompile Include="src\startNode.cpp" />
+    <ClCompile Include="src\stopNode.cpp" />
+    <ClCompile Include="src\writeNode.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="external\include\raylib.h" />
     <ClInclude Include="external\include\raymath.h" />
     <ClInclude Include="external\include\rlgl.h" />
+    <ClInclude Include="include\assignNode.h" />
     <ClInclude Include="include\codeComponents.h" />
+    <ClInclude Include="include\decisionNode.h" />
     <ClInclude Include="include\execFunc.h" />
     <ClInclude Include="include\fileFunc.h" />
+    <ClInclude Include="include\nodeComponents.h" />
+    <ClInclude Include="include\nodeGeneral.h" />
+    <ClInclude Include="include\pin.h" />
+    <ClInclude Include="include\readNode.h" />
+    <ClInclude Include="include\startNode.h" />
+    <ClInclude Include="include\stopNode.h" />
     <ClInclude Include="include\uiComponents.h" />
+    <ClInclude Include="include\writeNode.h" />
   </ItemGroup>
   <ItemGroup>
     <Library Include="external\lib\raylib.lib" />
