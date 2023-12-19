@@ -69,6 +69,6 @@ void DrawReadNode(ReadNode* node) {
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 	DrawLink(node->outPin, node->toPin);
 }
-void ReadValue(ReadNode* node) {
-	std::cin >> *(node->myVar);
+void SetValue(ReadNode* node, int x) {
+	*(node->myVar) = x;
 }

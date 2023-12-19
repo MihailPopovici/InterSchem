@@ -2,6 +2,13 @@
 
 #include "nodeComponents.h"
 
+enum ExecutionState {
+	notExecuting, // TODO: find a better name?
+	processing,
+	waitingForInput,
+	done
+};
+
 void GetClickedNodeID(NodeInfo& clickedNode, int mx, int my, NodeArrays& nodes) {
 	if (clickedNode.id != -1) return;
 
@@ -53,41 +60,45 @@ void GetClickedNodeID(NodeInfo& clickedNode, int mx, int my, NodeArrays& nodes) 
 	}
 }
 
-void Execute(NodeArrays& nodes) {
-	void* currentNode = nodes.startNode->toPin->owner;
-	NodeType currentType = nodes.startNode->toPin->ownerType;
-	while (currentType != stop) {
-		switch (currentType) {
-		//case start: break;
-		case read: 
-			ReadValue((ReadNode*)currentNode);
+void GetNextNodeInExecution(void*& currentNode, NodeType& currentType, ExecutionState& state) {
+	switch (currentType) {
+	case start: 
+		currentType = ((StartNode*)currentNode)->toPin->ownerType;
+		currentNode = ((StartNode*)currentNode)->toPin->owner;
+		break;
+	case read:
+		currentType = ((ReadNode*)currentNode)->toPin->ownerType;
+		currentNode = ((ReadNode*)currentNode)->toPin->owner;
+		break;
+	case write:
+		currentType = ((WriteNode*)currentNode)->toPin->ownerType;
+		currentNode = ((WriteNode*)currentNode)->toPin->owner;
+		break;
+	case assign:
+		currentType = ((AssignNode*)currentNode)->toPin->ownerType;
+		currentNode = ((AssignNode*)currentNode)->toPin->owner;
+		break;
+	case decision:
+		// TODO: 
+		// TODO: choose branch according to condition
 
-			currentType = ((ReadNode*)currentNode)->toPin->ownerType;
-			currentNode = ((ReadNode*)currentNode)->toPin->owner;
-			break;
-		case write: 
-			WriteValue((WriteNode*)currentNode);
+		//currentType = ((DecisionNode*)currentNode)->toPinTrue->ownerType;
+		//currentNode = ((DecisionNode*)currentNode)->toPinTrue->owner;
 
-			currentType = ((WriteNode*)currentNode)->toPin->ownerType;
-			currentNode = ((WriteNode*)currentNode)->toPin->owner;
-			break;
-		case assign: 
-			// TODO:
+		//currentType = ((DecisionNode*)currentNode)->toPinFalse->ownerType;
+		//currentNode = ((DecisionNode*)currentNode)->toPinFalse->owner;
+		break;
+	case stop: break;
+	default: break;
+	}
 
-			currentType = ((AssignNode*)currentNode)->toPin->ownerType;
-			currentNode = ((AssignNode*)currentNode)->toPin->owner;
-			break;
-		case decision: 
-			// TODO: 
-			// TODO: choose branch according to condition
-			
-			//currentType = ((DecisionNode*)currentNode)->toPinTrue->ownerType;
-			//currentNode = ((DecisionNode*)currentNode)->toPinTrue->owner;
-			//currentType = ((DecisionNode*)currentNode)->toPinFalse->ownerType;
-			//currentNode = ((DecisionNode*)currentNode)->toPinFalse->owner;
-			break;
-		//case stop: break;
-		default: break;
-		}
+	if (currentType == read) {
+		state = waitingForInput;
+	}
+	else if (currentType == stop) {
+		state = done;
+	}
+	else {
+		state = processing;
 	}
 }

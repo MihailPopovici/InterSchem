@@ -1,8 +1,11 @@
 #pragma once
+
 #include <cstring>
 #include <raylib.h>
+#include <string>
+
 struct Button {
-	char* label;
+	std::string label;
 	int fontSize, padding;
 	Color bgColor, textColor;
 	float x, y, width, height;
@@ -26,7 +29,7 @@ struct MultiLinetext {
 
 Button* NewButton() {
 	Button* p = new Button;
-	p->label = nullptr;
+	p->label = "";
 	p->fontSize = -1;
 	p->padding = -1;
 	p->x = -1;
@@ -41,9 +44,8 @@ void SetButtonColors(Button* p, Color bgColor, Color textColor) {
 	p->textColor = textColor;
 }
 
-void SetButtonLabel(Button* p, const char* label, int fontSize, int padding) {
-	p->label = new char[strlen(label) + 1]; //TODO:de verificat daca new face curat
-	strcpy(p->label, label);
+void SetButtonLabel(Button* p, const char* label, int fontSize, int padding) { // TODO: replace const char* with string& ?? 
+	p->label = label;
 	p->fontSize = fontSize;
 	p->padding = padding;
 	p->width = MeasureText(label, fontSize) + 2 * padding;
@@ -62,5 +64,5 @@ bool IsButtonClicked(Button* p) {
 
 void DrawButton(Button* p) {
 	DrawRectangle(p->x, p->y, p->width, p->height, p->bgColor);
-	DrawText(p->label, p->x + p->padding, p->y + p->padding, p->fontSize, p->textColor);
+	DrawText(p->label.c_str(), p->x + p->padding, p->y + p->padding, p->fontSize, p->textColor);
 }

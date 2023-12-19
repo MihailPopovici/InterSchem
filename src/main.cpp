@@ -15,6 +15,13 @@ int main() {
 	cNode.index = -1;
 	cNode.type = start;
 
+	Button* exec = NewButton();
+	SetButtonColors(exec, GREEN, BLACK);
+	SetButtonPosition(exec, 5, 5);
+	SetButtonLabel(exec, "Execute", 20, 5);
+	string input = "";
+	string output = "";
+
 	NodeArrays nodes;
 
 	NewNode(nodes, start, 5, 20, 500, 100);
@@ -24,9 +31,9 @@ int main() {
 	NewNode(nodes, write, 5, 20, 700, 400);
 	NewNode(nodes, stop, 5, 20, 500, 500);
 
-	/*void* ptr = nullptr;
-	ptr = nodes.readNodes[0];
-	cout << ((ReadNode*)ptr)->id;*/ // TODO: 
+	ExecutionState state = notExecuting;
+	void* currentNode = nodes.startNode;
+	NodeType currentNodeType = start;
 
 	NewLink(nodes.startNode->toPin, nodes.readNodes[0]->inPin);
 	NewLink(nodes.readNodes[0]->toPin, nodes.writeNodes[0]->inPin);
@@ -35,7 +42,6 @@ int main() {
 	int x = 2;
 	nodes.readNodes[0]->myVar = &x;
 	nodes.writeNodes[0]->myVar = &x;
-	Execute(nodes);
 
 	SetTargetFPS(60);
 	while (!WindowShouldClose()) {
@@ -62,25 +68,66 @@ int main() {
 			cNode.id = -1;
 		}
 
+		if (IsButtonClicked(exec)) {
+			GetNextNodeInExecution(currentNode, currentNodeType, state);
+		}
+
+		if (state == notExecuting) {
+
+		}
+		else if (state == waitingForInput) {
+			cout << "Waiting for input\n";
+			char c = GetCharPressed();
+			if (c != 0 && (c >= '0' && c <= '9')) {
+				input.insert(input.end(), c);
+			}
+
+			if (IsKeyPressed(KEY_ENTER)) {
+				x = stoi(input);
+				SetValue((ReadNode*)currentNode, x);
+				GetNextNodeInExecution(currentNode, currentNodeType, state);
+			}
+		}
+		else if (state == processing) {
+			cout << "Processing\n";
+			if (currentNodeType == write) {
+				WriteValue((WriteNode*)currentNode);
+			}
+			GetNextNodeInExecution(currentNode, currentNodeType, state);
+		}
+		else {
+			cout << "Done\n";
+			state = notExecuting;
+			output = "Result: " + to_string(*nodes.writeNodes[0]->myVar);
+		}
+
 		BeginDrawing();
 		ClearBackground(BLACK);
 		// render on screen
 
 		DrawStartNode(nodes.startNode);
-		for (auto p : nodes.stopNodes) {
+		for (StopNode* p : nodes.stopNodes) {
 			DrawStopNode(p);
 		}
-		for (auto p : nodes.readNodes) {
+		for (ReadNode* p : nodes.readNodes) {
 			DrawReadNode(p);
 		}
-		for (auto p : nodes.writeNodes) {
+		for (WriteNode* p : nodes.writeNodes) {
 			DrawWriteNode(p);
 		}
-		for (auto p : nodes.assignNodes) {
+		for (AssignNode* p : nodes.assignNodes) {
 			DrawAssignNode(p);
 		}
-		for (auto p : nodes.decisionNodes) {
+		for (DecisionNode* p : nodes.decisionNodes) {
 			DrawDecisionNode(p);
+		}
+		DrawButton(exec);
+
+		if (state == waitingForInput) {
+			DrawText(input.c_str(), 5, 35, 20, WHITE);
+		}
+		else if (!output.empty()) {
+			DrawText(output.c_str(), 5, 35, 20, WHITE);
 		}
 
 		EndDrawing();

@@ -19,4 +19,4 @@ ReadNode* NewReadNode(int padding, int fontSize, float x, float y);
 void SetReadNodeSize(ReadNode* node, int padding, int fontSize);
 void SetReadNodePosition(ReadNode* node, float x, float y);
 void DrawReadNode(ReadNode* node);
-void ReadValue(ReadNode* node);
+void SetValue(ReadNode* node, int x);
