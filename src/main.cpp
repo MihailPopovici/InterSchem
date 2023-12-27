@@ -22,8 +22,26 @@ int main() {
 	string input = "";
 	string output = "";
 
-	NodeArrays nodes;
+	Button* createStartNode = NewButton();
+	SetButtonColors(createStartNode, DARKGREEN, WHITE);
+	SetButtonLabel(createStartNode, "New Start Node", 20, 5);
+	Button* createReadNode = NewButton();
+	SetButtonColors(createReadNode, YELLOW, BLACK);
+	SetButtonLabel(createReadNode, "New Read Node", 20, 5);
+	Button* createWriteNode = NewButton();
+	SetButtonColors(createWriteNode, BLUE, WHITE);
+	SetButtonLabel(createWriteNode, "New Write Node", 20, 5);
+	Button* createAssignNode = NewButton();
+	SetButtonColors(createAssignNode, ORANGE, BLACK);
+	SetButtonLabel(createAssignNode, "New Assign Node", 20, 5);
+	Button* createDecisionNode = NewButton();
+	SetButtonColors(createDecisionNode, PURPLE, WHITE);
+	SetButtonLabel(createDecisionNode, "New Decision Node", 20, 5);
+	Button* createStopNode = NewButton();
+	SetButtonColors(createStopNode, RED, WHITE);
+	SetButtonLabel(createStopNode, "New Stop Node", 20, 5);
 
+	NodeArrays nodes;
 	NewNode(nodes, start, 5, 20, 500, 100);
 	NewNode(nodes, read, 5, 20, 500, 200);
 	//NewNode(nodes, decision, 5, 20, 500, 300);
@@ -31,23 +49,39 @@ int main() {
 	NewNode(nodes, write, 5, 20, 700, 400);
 	NewNode(nodes, stop, 5, 20, 500, 500);
 
-	ExecutionState state = notExecuting;
-	void* currentNode = nodes.startNode;
-	NodeType currentNodeType = start;
-
 	NewLink(nodes.startNode->toPin, nodes.readNodes[0]->inPin);
 	NewLink(nodes.readNodes[0]->toPin, nodes.writeNodes[0]->inPin);
 	NewLink(nodes.writeNodes[0]->toPin, nodes.stopNodes[0]->inPin);
+
+	ExecutionState state = notExecuting;
+	void* currentNode = nodes.startNode;
+	NodeType currentNodeType = start;
 
 	int x = 2;
 	nodes.readNodes[0]->myVar = &x;
 	nodes.writeNodes[0]->myVar = &x;
 
+	Window* createNodes = NewWindow();
+	SetWindowColor(createNodes, DARKGRAY);
+	AddElementToWindow(createNodes, { (void*)createStartNode, WindowElementTypeButton });
+	AddElementToWindow(createNodes, { (void*)createReadNode, WindowElementTypeButton });
+	AddElementToWindow(createNodes, { (void*)createWriteNode, WindowElementTypeButton });
+	AddElementToWindow(createNodes, { (void*)createAssignNode, WindowElementTypeButton });
+	AddElementToWindow(createNodes, { (void*)createDecisionNode, WindowElementTypeButton });
+	AddElementToWindow(createNodes, { (void*)createStopNode, WindowElementTypeButton });
+	SetWindowSpacing(createNodes, 5.0f);
+	SetWindowPadding(createNodes, 5.0f);
+	SetWindowPosition(createNodes, 5, 800 - createNodes->height - 5); //TODO: main window height should not be hardcoded
+
 	SetTargetFPS(60);
 	while (!WindowShouldClose()) {
 		// update data
-		
 		int mx = GetMouseX(), my = GetMouseY();
+
+		if (IsKeyPressed(KEY_F)) {
+			SetWindowPosition(createNodes, mx, my);
+		}
+		
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 			GetClickedNodeID(cNode, mx, my, nodes);
 		}
@@ -70,6 +104,24 @@ int main() {
 
 		if (IsButtonClicked(exec)) {
 			GetNextNodeInExecution(currentNode, currentNodeType, state);
+		}
+		if (IsButtonClicked(createStartNode)) {
+			NewNode(nodes, start, 5, 20, 300, 300);
+		}
+		if (IsButtonClicked(createReadNode)) {
+			NewNode(nodes, read, 5, 20, 300, 300);
+		}
+		if (IsButtonClicked(createWriteNode)) {
+			NewNode(nodes, write, 5, 20, 300, 300);
+		}
+		if (IsButtonClicked(createAssignNode)) {
+			NewNode(nodes, assign, 5, 20, 300, 300);
+		}
+		if (IsButtonClicked(createDecisionNode)) {
+			NewNode(nodes, decision, 5, 20, 300, 300);
+		}
+		if (IsButtonClicked(createStopNode)) {
+			NewNode(nodes, stop, 5, 20, 300, 300);
 		}
 
 		if (state == notExecuting) {
@@ -102,8 +154,9 @@ int main() {
 		}
 
 		BeginDrawing();
-		ClearBackground(BLACK);
 		// render on screen
+		ClearBackground(BLACK);
+		DrawWindow(createNodes);
 
 		DrawStartNode(nodes.startNode);
 		for (StopNode* p : nodes.stopNodes) {
