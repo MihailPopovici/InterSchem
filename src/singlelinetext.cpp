@@ -30,7 +30,7 @@ void SetSingleLineTextString(SingleLineText* stext, std::string str) {
 }
 bool IsSingleLineTextHovered(SingleLineText* stext) {
 	int mx = GetMouseX(), my = GetMouseY();
-	return stext->focused && mx >= stext->x && mx <= stext->x + stext->width && my >= stext->y && my <= stext->y + stext->height;
+	return mx >= stext->x && mx <= stext->x + stext->width && my >= stext->y && my <= stext->y + stext->height;
 }
 bool IsSingleLineTextClicked(SingleLineText* stext) {
 	return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && IsSingleLineTextHovered(stext);

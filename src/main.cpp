@@ -109,9 +109,9 @@ int main() {
 	SetSingleLineTextPadding(inputLine, 5);
 	SetSingleLineTextPosition(inputLine, 300, 5);
 
-	string testName = "Test";
+	/*string testName = "Test";
 	int testVal = 5;
-	NewNode(nodes, assign, 5, 20, 400, 400);
+	NewNode(nodes, assign, 5, 20, 400, 400);*/
 	//LinkAssignNodeVar(nodes.assignNodes[0], &testName, &testVal);
 
 	SetTargetFPS(120);
@@ -119,9 +119,12 @@ int main() {
 		//double t = GetTime();
 
 		if (IsKeyPressed(KEY_Q)) {
-			EvaluateAssignNode(nodes.assignNodes[0]);
-			ResizeDictionaryRow(selectedRow);
-			selectedRow = nullptr;
+			EvaluateAssignNode(nodes.assignNodes[0], dict);
+			//ResizeDictionaryRow(selectedRow);
+			//selectedRow = nullptr;
+		}
+		for (AssignNode* p : nodes.assignNodes) {
+			GetInputAssignNode(p);
 		}
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
