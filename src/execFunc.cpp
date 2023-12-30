@@ -149,7 +149,7 @@ void DrawSelectedNodeOptions(AnyNodeType& node, Button* del, Button* edit, Butto
 	SetButtonPosition(edit, x + width + del->width + 12, y + (height - edit->height) / 2);
 	DrawButton(edit);
 
-	if (node.type == read || node.type == write) {
+	if (node.type == read || node.type == write || node.type == assign || node.type == decision) {
 		SetButtonPosition(linkVar, x + width + del->width + edit->width + 17, y + (height - del->height) / 2);
 		DrawButton(linkVar);
 	}

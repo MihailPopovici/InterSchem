@@ -109,9 +109,20 @@ int main() {
 	SetSingleLineTextPadding(inputLine, 5);
 	SetSingleLineTextPosition(inputLine, 300, 5);
 
+	string testName = "Test";
+	int testVal = 5;
+	NewNode(nodes, assign, 5, 20, 400, 400);
+	//LinkAssignNodeVar(nodes.assignNodes[0], &testName, &testVal);
+
 	SetTargetFPS(120);
 	while (!WindowShouldClose()) {
 		//double t = GetTime();
+
+		if (IsKeyPressed(KEY_Q)) {
+			EvaluateAssignNode(nodes.assignNodes[0]);
+			ResizeDictionaryRow(selectedRow);
+			selectedRow = nullptr;
+		}
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 			if (IsSingleLineTextClicked(inputLine)) {
@@ -164,6 +175,10 @@ int main() {
 				}
 				else if (selectedNode.type == write) {
 					LinkWriteNodeVar((WriteNode*)selectedNode.address, &selectedRow->value);
+				}
+				else if (selectedNode.type == assign) {
+					LinkAssignNodeVar((AssignNode*)selectedNode.address, &selectedRow->key, &selectedRow->value);
+					SetAssignNodeExpression(nodes.assignNodes[0], "sin(3.1415/2)"); //TODO: move this
 				}
 			}
 			else {

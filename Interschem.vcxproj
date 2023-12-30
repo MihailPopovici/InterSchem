@@ -137,6 +137,7 @@
     <ClCompile Include="src\button.cpp" />
     <ClCompile Include="src\decisionNode.cpp" />
     <ClCompile Include="src\dictionary.cpp" />
+    <ClCompile Include="src\evalExpression.cpp" />
     <ClCompile Include="src\execFunc.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\nodeComponents.cpp" />
@@ -157,6 +158,7 @@
     <ClInclude Include="include\codeComponents.h" />
     <ClInclude Include="include\decisionNode.h" />
     <ClInclude Include="include\dictionary.h" />
+    <ClInclude Include="include\evalExpression.h" />
     <ClInclude Include="include\execFunc.h" />
     <ClInclude Include="include\fileFunc.h" />
     <ClInclude Include="include\nodeComponents.h" />
