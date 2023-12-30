@@ -1,6 +1,7 @@
 #pragma once
 
 enum NodeType {
+	noType,
 	start,
 	read,
 	write,
@@ -8,7 +9,13 @@ enum NodeType {
 	decision,
 	stop
 };
-struct NodeInfo {
-	int id, index;
+
+//struct NodeInfo {
+//	int id, index;
+//	NodeType type;
+//};
+
+struct AnyNodeType {
+	void* address;
 	NodeType type;
 };

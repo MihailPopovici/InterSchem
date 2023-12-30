@@ -1,6 +1,7 @@
 #pragma once
 
 #include "pin.h"
+#include <string>
 
 struct ReadNode {
 	int id, index;
@@ -12,11 +13,13 @@ struct ReadNode {
 	Pin outPin;
 	Pin* toPin;
 
-	int* myVar;
+	std::string* myVarName;
+	int* myVarValue;
 };
 
 ReadNode* NewReadNode(int padding, int fontSize, float x, float y);
 void SetReadNodeSize(ReadNode* node, int padding, int fontSize);
 void SetReadNodePosition(ReadNode* node, float x, float y);
 void DrawReadNode(ReadNode* node);
-void SetValue(ReadNode* node, int x);
+void LinkReadNodeVar(ReadNode* node, std::string* name, int* val);
+void SetReadNodeVarValue(ReadNode* node, int x);

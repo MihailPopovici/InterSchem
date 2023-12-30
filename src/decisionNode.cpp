@@ -18,6 +18,7 @@ DecisionNode* NewDecisionNode(int padding, int fontSize, float x, float y) {
 	p->height = 0.0f;
 
 	p->inPin.id = 0;
+	p->inPin.type = input;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
@@ -25,6 +26,7 @@ DecisionNode* NewDecisionNode(int padding, int fontSize, float x, float y) {
 	p->inPin.ownerType = decision;
 
 	p->outPinTrue.id = 0;
+	p->outPinTrue.type = output;
 	p->outPinTrue.x = 0.0f;
 	p->outPinTrue.y = 0.0f;
 	p->outPinTrue.radius = PIN_RADIUS;
@@ -32,6 +34,7 @@ DecisionNode* NewDecisionNode(int padding, int fontSize, float x, float y) {
 	p->outPinTrue.ownerType = decision;
 
 	p->outPinFalse.id = 0;
+	p->outPinFalse.type = output;
 	p->outPinFalse.x = 0.0f;
 	p->outPinFalse.y = 0.0f;
 	p->outPinFalse.radius = PIN_RADIUS;

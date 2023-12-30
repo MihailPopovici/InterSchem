@@ -19,6 +19,7 @@ StopNode* NewStopNode(int padding, int fontSize, float x, float y) {
 	p->height = 0.0f;
 
 	p->inPin.id = 0;
+	p->inPin.type = input;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;

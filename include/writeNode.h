@@ -12,11 +12,12 @@ struct WriteNode {
 	Pin outPin;
 	Pin* toPin;
 
-	int* myVar;
+	int* myVarValue;
 };
 
 WriteNode* NewWriteNode(int padding, int fontSize, float x, float y);
 void SetWriteNodeSize(WriteNode* node, int padding, int fontSize);
 void SetWriteNodePosition(WriteNode* node, float x, float y);
 void DrawWriteNode(WriteNode* node);
-void WriteValue(WriteNode* node);
+void LinkWriteNodeVar(WriteNode* node, int* x);
+int GetWriteNodeVarValue(WriteNode* node);
