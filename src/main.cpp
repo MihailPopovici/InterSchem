@@ -338,7 +338,7 @@ int main() {
 		else {
 			cout << "Done\n";
 			state = notExecuting;
-			outputString = "Result: " + to_string(*nodes.writeNodes[0]->myVarValue);
+			//outputString = "Result: " + to_string(*nodes.writeNodes[0]->myVarValue);
 			currentNode = { nodes.startNode, start };
 		}
 

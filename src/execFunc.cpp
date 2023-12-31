@@ -67,10 +67,12 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 		currentNode.type = ((WriteNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((WriteNode*)currentNode.address)->toPin->owner;
 		break;
-	case assign:
+	case assign: {
+		EvaluateAssignNode((AssignNode*)currentNode.address, dict);
 		currentNode.type = ((AssignNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((AssignNode*)currentNode.address)->toPin->owner;
 		break;
+	}
 	case decision: {
 		int result = EvaluateDecisionNode((DecisionNode*)currentNode.address, dict);
 
