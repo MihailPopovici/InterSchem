@@ -81,11 +81,11 @@ int main() {
 	Dictionary* dict = NewDictionary();
 	SetDictionaryPosition(dict, 100, 100);
 	DictionaryRow* r1 = NewDictionaryRow();
-	SetDictionaryRowData(r1, "abc", 1, 20, 5);
+	SetDictionaryRowData(r1, "a", 1, 20, 5);
 	DictionaryRow* r2 = NewDictionaryRow();
-	SetDictionaryRowData(r2, "ab", 44, 20, 5);
+	SetDictionaryRowData(r2, "b", 44, 20, 5);
 	DictionaryRow* r3 = NewDictionaryRow();
-	SetDictionaryRowData(r3, "abd", 3, 20, 5);
+	SetDictionaryRowData(r3, "c", 3, 20, 5);
 	DictionaryRow* r4 = NewDictionaryRow();
 	SetDictionaryRowData(r4, "bruh", 420, 20, 5);
 	AddDictionaryRow(dict, r1);
@@ -109,22 +109,19 @@ int main() {
 	SetSingleLineTextPadding(inputLine, 5);
 	SetSingleLineTextPosition(inputLine, 300, 5);
 
-	/*string testName = "Test";
-	int testVal = 5;
-	NewNode(nodes, assign, 5, 20, 400, 400);*/
-	//LinkAssignNodeVar(nodes.assignNodes[0], &testName, &testVal);
-
+	int dx=0, dy=0;
 	SetTargetFPS(120);
 	while (!WindowShouldClose()) {
 		//double t = GetTime();
 
 		if (IsKeyPressed(KEY_Q)) {
 			EvaluateAssignNode(nodes.assignNodes[0], dict);
-			//ResizeDictionaryRow(selectedRow);
-			//selectedRow = nullptr;
 		}
 		for (AssignNode* p : nodes.assignNodes) {
 			GetInputAssignNode(p);
+		}
+		for (DecisionNode* p : nodes.decisionNodes) {
+			GetInputDecisionNode(p);
 		}
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -199,6 +196,34 @@ int main() {
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 			if (edState == EditorStateNormal) {
 				GetClickedNode(dragNode, mx, my, nodes);
+				if (dragNode.type != noType && dragNode.address!=nullptr) {
+					if (dragNode.type == start) {
+						dx = ((StartNode*)dragNode.address)->x;
+						dy = ((StartNode*)dragNode.address)->y;
+					}
+					else if (dragNode.type == read) {
+						dx = ((ReadNode*)dragNode.address)->x;
+						dy = ((ReadNode*)dragNode.address)->y;
+					}
+					else if (dragNode.type == write) {
+						dx = ((WriteNode*)dragNode.address)->x;
+						dy = ((WriteNode*)dragNode.address)->y;
+					}
+					else if (dragNode.type == assign) {
+						dx = ((AssignNode*)dragNode.address)->x;
+						dy = ((AssignNode*)dragNode.address)->y;
+					}
+					else if (dragNode.type == decision) {
+						dx = ((DecisionNode*)dragNode.address)->x;
+						dy = ((DecisionNode*)dragNode.address)->y;
+					}
+					else {
+						dx = ((StopNode*)dragNode.address)->x;
+						dy = ((StopNode*)dragNode.address)->y;
+					}
+					dx -= mx;
+					dy -= my;
+				}
 			}
 
 			if (edState == EditorStateEditingNode) {
@@ -233,7 +258,7 @@ int main() {
 			}
 		}
 		else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
-			DragNode(dragNode, mx, my);
+			DragNode(dragNode, dx, dy);
 		}
 		else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 			dragNode = { nullptr, noType }; // TODO: performance?
@@ -264,7 +289,7 @@ int main() {
 		}
 
 		if (IsButtonClicked(exec)) {
-			GetNextNodeInExecution(currentNode, state);
+			GetNextNodeInExecution(currentNode, state, dict);
 		}
 		if (IsButtonClicked(createStartNode)) {
 			currentNode = dragNode = NewNode(nodes, start, 5, 20, mx, my);
@@ -300,7 +325,7 @@ int main() {
 				ReadNode* p = (ReadNode*)currentNode.address;
 				SetReadNodeVarValue(p, x);
 				ResizeDictionaryRow(GetDictionaryRow(dict, *p->myVarName));
-				GetNextNodeInExecution(currentNode, state);
+				GetNextNodeInExecution(currentNode, state, dict);
 			}
 		}
 		else if (state == processing) {
@@ -308,7 +333,7 @@ int main() {
 			if (currentNode.type == write) {
 				cout << GetWriteNodeVarValue((WriteNode*)currentNode.address) << "\n";
 			}
-			GetNextNodeInExecution(currentNode, state);
+			GetNextNodeInExecution(currentNode, state, dict);
 		}
 		else {
 			cout << "Done\n";

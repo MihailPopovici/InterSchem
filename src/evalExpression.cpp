@@ -1,7 +1,7 @@
 #include "evalExpression.h"
 
-var variables[100] = { };
-int nrOfVariables = 0;
+//var variables[100] = { };
+//int nrOfVariables = 0;
 
 bool isFunction(std::string s) {
     if (s == "abs" || s == "sin" || s == "cos" || s == "log" || s == "sqrt") return 1;
@@ -102,21 +102,21 @@ void CheckForUnaryMinus(std::vector<std::string>& tokens) {
         }
     }
 }
-void AssignValues(std::vector<std::string>& tokens) {
-    for (int i = 0; i < tokens.size(); i++) {
-        if (isVariable(tokens[i])) {
-            variables[nrOfVariables].name = tokens[i];
-            std::cout << "Insert the value for \"" << tokens[i] << "\" : ";
-            std::cin >> variables[nrOfVariables].value;
-            nrOfVariables++;
-        }
-    }
-}
-float GetVarValue(std::string s) {
-    for (int i = 0; i < nrOfVariables; i++) {
-        if (variables[i].name == s) return variables[i].value;
-    }
-}
+//void AssignValues(std::vector<std::string>& tokens) {
+//    for (int i = 0; i < tokens.size(); i++) {
+//        if (isVariable(tokens[i])) {
+//            variables[nrOfVariables].name = tokens[i];
+//            std::cout << "Insert the value for \"" << tokens[i] << "\" : ";
+//            std::cin >> variables[nrOfVariables].value;
+//            nrOfVariables++;
+//        }
+//    }
+//}
+//float GetVarValue(std::string s) {
+//    for (int i = 0; i < nrOfVariables; i++) {
+//        if (variables[i].name == s) return variables[i].value;
+//    }
+//}
 bool CheckCorrectitude(std::vector<std::string> tokens) {
     if (nrOfPharentesis(tokens) != 0) return false;
     for (int i = 0; i < tokens.size() - 1; i++) {
@@ -132,7 +132,7 @@ bool CheckCorrectitude(std::vector<std::string> tokens) {
     if (isNumber(tokens[tokens.size() - 1]) && nrOfDots(tokens[tokens.size() - 1]) > 1) return false;
     return true;
 }
-float evaluate(std::string expression, int& err) {
+float evaluate(std::string expression, Dictionary* dict, int& err) {
     //declare our stacks
     std::stack <float> values;
     std::stack <std::string> operators;
@@ -146,7 +146,7 @@ float evaluate(std::string expression, int& err) {
     //check for unary operators
     CheckForUnaryMinus(tokens);
     //assign values to variables
-    AssignValues(tokens);
+    //AssignValues(tokens);
 
     for (int i = 0; i < tokens.size(); i++) {
         //if we have a number
@@ -156,7 +156,7 @@ float evaluate(std::string expression, int& err) {
         }
         //if we have a variable
         else if (isVariable(tokens[i])) {
-            float number = GetVarValue(tokens[i]);
+            float number = GetValueFromDictionary(dict, tokens[i]);
             values.push(number);
         }
         //if we have an opening bracket : (
@@ -261,7 +261,7 @@ int logicalPriority(std::string s) {
     if (s == "&&")return 2;
     return -1;
 }
-bool evaluateComparison(std::string s, int& errorCode) {
+bool evaluateComparison(std::string s,Dictionary* dict, int& errorCode) {
     std::string expression1, op, expression2;
     int i = 0;
     while (isComparisonOperator({ s[i] }) == false) {
@@ -276,8 +276,8 @@ bool evaluateComparison(std::string s, int& errorCode) {
         i++;
     }
     float value1, value2;
-    value1 = evaluate(expression1, errorCode);
-    value2 = evaluate(expression2, errorCode);
+    value1 = evaluate(expression1,dict, errorCode);
+    value2 = evaluate(expression2,dict, errorCode);
     if (errorCode == -1) {
         return 0;
     }
@@ -331,7 +331,7 @@ void SplitIntoLogicalTokens(std::string s, std::vector<std::string>& tokens, int
         tokens.push_back(token);
     }
 }
-bool evaluateLogicalExpression(std::string s, int& errorCode) {
+bool evaluateLogicalExpression(std::string s,Dictionary* dict, int& errorCode) {
     std::stack <std::string> operators;
     std::stack <bool> truthValues;
 
@@ -347,7 +347,7 @@ bool evaluateLogicalExpression(std::string s, int& errorCode) {
     for (int i = 0; i < tokens.size(); i++) {
         //if we have an expression
         if (isLogicalOperator(tokens[i]) == false) {
-            bool truth = evaluateComparison(tokens[i], errorCode);
+            bool truth = evaluateComparison(tokens[i],dict, errorCode);
             truthValues.push(truth);
         }
         //if we have a logical operator

@@ -111,7 +111,7 @@ void SetAssignNodeExpression(AssignNode* node, std::string expression) {
 }
 void EvaluateAssignNode(AssignNode* node, Dictionary* dict) {
 	int err = 0;
-	float result = evaluate(node->expression->str, err);
+	float result = evaluate(node->expression->str,dict, err);
 	if (err != 0) {
 		// TODO: popup
 	}

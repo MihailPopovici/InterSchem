@@ -52,6 +52,7 @@ void SetDictionaryPosition(Dictionary* dict, int x, int y);
 int AddDictionaryRow(Dictionary* dict, DictionaryRow* drow);
 int FindKeyInDictionary(Dictionary* dict, std::string key);
 int GetValueFromDictionary(Dictionary* dict, int index);
+int GetValueFromDictionary(Dictionary* dict, std::string key);
 bool IsDictionaryHovered(Dictionary* dict);
 bool IsDictionaryClicked(Dictionary* dict);
 bool IsDictionaryRowClicked(Dictionary* dict);

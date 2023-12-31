@@ -48,7 +48,7 @@ void GetClickedNode(AnyNodeType& clickedNode, int mx, int my, NodeArrays& nodes)
 
 	clickedNode = { nullptr, noType };
 }
-void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state) {
+void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dictionary* dict) {
 	if (currentNode.address == nullptr || currentNode.type == noType) {
 		state = done; // TODO: add error variant
 		return;
@@ -71,16 +71,22 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state) {
 		currentNode.type = ((AssignNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((AssignNode*)currentNode.address)->toPin->owner;
 		break;
-	case decision:
-		// TODO: 
-		// TODO: choose branch according to condition
+	case decision: {
+		int result = EvaluateDecisionNode((DecisionNode*)currentNode.address, dict);
 
-		//currentNode.type = ((DecisionNode*)currentNode.address)->toPinTrue->ownerType;
-		//currentNode.address = ((DecisionNode*)currentNode.address)->toPinTrue->owner;
-
-		//currentNode.type = ((DecisionNode*)currentNode.address)->toPinFalse->ownerType;
-		//currentNode.address = ((DecisionNode*)currentNode.address)->toPinFalse->owner;
+		if (result == 0) {
+			//TODO:
+		}
+		else if (result == 1) {
+			currentNode.type = ((DecisionNode*)currentNode.address)->toPinTrue->ownerType;
+			currentNode.address = ((DecisionNode*)currentNode.address)->toPinTrue->owner;
+		}
+		else {
+			currentNode.type = ((DecisionNode*)currentNode.address)->toPinFalse->ownerType;
+			currentNode.address = ((DecisionNode*)currentNode.address)->toPinFalse->owner;
+		}
 		break;
+	}
 	case stop: break;
 	default: break;
 	}
@@ -154,33 +160,33 @@ void DrawSelectedNodeOptions(AnyNodeType& node, Button* del, Button* edit, Butto
 		DrawButton(linkVar);
 	}
 }
-void DragNode(AnyNodeType& node, int mx, int my) {//TODO: asta n ar tb sa fie aici
+void DragNode(AnyNodeType& node, int dx, int dy) {//TODO: asta n ar tb sa fie aici
 	if (node.address == nullptr || node.type == noType) { // TODO: nu cred ca e necesar sa verifici
 		return;
 	}
-
+	int mx = GetMouseX(), my = GetMouseY();
 	if (node.type == start) {
-		SetStartNodePosition((StartNode*)node.address, mx, my);
+		SetStartNodePosition((StartNode*)node.address, mx + dx, my + dy);
 		return;
 	}
 	if (node.type == read) {
-		SetReadNodePosition((ReadNode*)node.address, mx, my);
+		SetReadNodePosition((ReadNode*)node.address, mx + dx, my + dy);
 		return;
 	}
 	if (node.type == write) {
-		SetWriteNodePosition((WriteNode*)node.address, mx, my);
+		SetWriteNodePosition((WriteNode*)node.address, mx + dx, my + dy);
 		return;
 	}
 	if (node.type == assign) {
-		SetAssignNodePosition((AssignNode*)node.address, mx, my);
+		SetAssignNodePosition((AssignNode*)node.address, mx + dx, my + dy);
 		return;
 	}
 	if (node.type == decision) {
-		SetDecisionNodePosition((DecisionNode*)node.address, mx, my);
+		SetDecisionNodePosition((DecisionNode*)node.address, mx + dx, my + dy);
 		return;
 	}
 	else {
-		SetStopNodePosition((StopNode*)node.address, mx, my);
+		SetStopNodePosition((StopNode*)node.address, mx + dx, my + dy);
 		return;
 	}
 }

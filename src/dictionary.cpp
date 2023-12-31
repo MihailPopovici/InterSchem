@@ -184,6 +184,24 @@ int GetValueFromDictionary(Dictionary* dict, int index) {
 	}
 	return -1;
 }
+int GetValueFromDictionary(Dictionary* dict, std::string key){
+	size_t n = dict->rows.size();
+	int left = 0, right = n - 1;
+	while (left <= right) {
+		int middle = (left + right) / 2;
+		if (key.compare(dict->rows[middle]->key) < 0) {
+			right = middle - 1;
+		}
+		else if (key.compare(dict->rows[middle]->key) > 0) {
+			left = middle + 1;
+		}
+		else {
+			return dict->rows[middle]->value;
+		}
+	}
+	//TODO:trebuie sa existe variabila in dictionar
+	return 0;
+}
 bool IsDictionaryHovered(Dictionary* dict) {
 	int mx = GetMouseX(), my = GetMouseY();
 	return mx >= dict->x && mx <= dict->x + dict->width && my >= dict->y && my <= dict->y + dict->height;
