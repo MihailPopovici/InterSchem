@@ -111,21 +111,25 @@ int main() {
 	SetSingleLineTextPosition(inputLine, 300, 5);
 
 	Font font = LoadFont("resources/IBMPlexMono-Medium.ttf");
-	MultiLineText console(650.0f, 600.0f, 8, 32, font, 20.0f, 5.0f, WHITE, BLACK);
-	console.PushLine("Insert value for x: ");
+	MultiLineText* console = NewMultiLineText(650, 500, 8, 32, font, 20.0f, 5.0f, WHITE, BLACK);
+	MultiLineTextPushLine(console, "Insert value for x: ");
 	Window* consoleWin = NewWindow();
 	SetWindowColor(consoleWin, { 66, 66, 66, 255 });
-	SetWindowPosition(consoleWin, 650, 600);
+	SetWindowPosition(consoleWin, 650, 550);
 	SetWindowSpacing(consoleWin, 5.0f);
 	SetWindowPadding(consoleWin, 5.0f);
-	//AddElementToWindow(consoleWin, { &console, WindowElementTypeMultiLineText});
+	AddElementToWindow(consoleWin, { console, WindowElementTypeMultiLineText});
+	Button* clearConsole = NewButton();
+	SetButtonColors(clearConsole, BLANK, WHITE);
+	SetButtonLabel(clearConsole, "Clear", 20, 5);
+	AddElementToWindow(consoleWin, { clearConsole, WindowElementTypeButton });
 
-	int dx=0, dy=0;
+	int dx = 0, dy = 0;
 	SetTargetFPS(120);
 	while (!WindowShouldClose()) {
 		//double t = GetTime();
-
-		console.Edit();
+		
+		MultiLineTextEdit(console);
 
 		if (IsKeyPressed(KEY_Q)) {
 			EvaluateAssignNode(nodes.assignNodes[0], dict);
@@ -327,6 +331,9 @@ int main() {
 		if (IsButtonClicked(createStopNode)) {
 			dragNode = NewNode(nodes, stop, 5, 20, mx, my);
 		}
+		if (IsButtonClicked(clearConsole)) {
+			MultiLineTextClear(console);
+		}
 
 		if (state == notExecuting) {
 
@@ -361,8 +368,8 @@ int main() {
 		// render on screen
 		ClearBackground({ 33, 33, 33 });
 
-		console.Draw();
-		//DrawWindow(consoleWin);
+		//Draw(console);
+		DrawWindow(consoleWin);
 		DrawWindow(createNodes);
 		DrawWindow(variables);
 

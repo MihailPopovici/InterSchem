@@ -3,188 +3,194 @@
 #include "raylib.h"
 #include <iostream>
 
-void MultiLineText::MergeLines(size_t destination, size_t source) {
-	text[destination] += text[source];
-	text.erase(text.begin() + source);
+void MultiLineTextMergeLines(MultiLineText* mtext, size_t destination, size_t source) {
+	mtext->text[destination] += mtext->text[source];
+	mtext->text.erase(mtext->text.begin() + source);
 }
-void MultiLineText::InsertLine(size_t pos, std::string line) {
-	text.insert(text.begin() + pos, line);
+void MultiLineTextInsertLine(MultiLineText* mtext, size_t pos, std::string line) {
+	mtext->text.insert(mtext->text.begin() + pos, line);
 }
-void MultiLineText::ToPreviousLine() {
-	if (lin > 0) {
-		lin--;
-		if (lin < firstLin) {
-			firstLin = lin;
+void MultiLineTextToPreviousLine(MultiLineText* mtext) {
+	if (mtext->lin > 0 && mtext->lin > mtext->limLin) {
+		mtext->lin--;
+		if (mtext->lin < mtext->firstLin) {
+			mtext->firstLin = mtext->lin;
 		}
-		if (col > text[lin].size()) {
-			col = text[lin].size();
-			if (col < firstCol) {
-				firstCol = col;
+		if (mtext->col > mtext->text[mtext->lin].size()) {
+			mtext->col = mtext->text[mtext->lin].size();
+			if (mtext->col < mtext->firstCol) {
+				mtext->firstCol = mtext->col;
 			}
 		}
 	}
 }
-void MultiLineText::ToNextLine() {
-	if (lin < text.size() - 1) {
-		lin++;
-		if (lin >= firstLin + visLin) {
-			firstLin++;
+void MultiLineTextToNextLine(MultiLineText* mtext) {
+	if (mtext->lin < mtext->text.size() - 1) {
+		mtext->lin++;
+		if (mtext->lin >= mtext->firstLin + mtext->visLin) {
+			mtext->firstLin++;
 		}
-		if (col > text[lin].size()) {
-			col = text[lin].size();
-			if (col < firstCol) {
-				firstCol = col;
+		if (mtext->col > mtext->text[mtext->lin].size()) {
+			mtext->col = mtext->text[mtext->lin].size();
+			if (mtext->col < mtext->firstCol) {
+				mtext->firstCol = mtext->col;
 			}
 		}
 	}
 }
-void MultiLineText::ToPreviousColumn() {
-	if (col > 0) {
-		col--;
-		if (col < firstCol) {
-			firstCol = col;
+void MultiLineTextToPreviousColumn(MultiLineText* mtext) {
+	if (mtext->col > 0) { //TODO: aici ai ramas LUCA
+		mtext->col--;
+		if (mtext->col < mtext->firstCol) {
+			mtext->firstCol = mtext->col;
 		}
 	}
-	else if (lin > 0) {
-		lin--;
-		if (lin < firstLin) {
-			firstLin = lin;
+	else if (mtext->lin > 0) {
+		mtext->lin--;
+		if (mtext->lin < mtext->firstLin) {
+			mtext->firstLin = mtext->lin;
 		}
-		col = text[lin].size();
-		if (col >= firstCol + visCol) {
-			firstCol = col - visCol + 1;
-		}
-	}
-}
-void MultiLineText::ToNextColumn() {
-	if (col < text[lin].size()) {
-		col++;
-		if (col >= firstCol + visCol) {
-			firstCol++;
-		}
-	}
-	else if (lin < text.size() - 1) {
-		col = 0;
-		firstCol = 0;
-		lin++;
-		if (lin >= firstLin + visLin) {
-			firstLin++;
+		mtext->col = mtext->text[mtext->lin].size();
+		if (mtext->col >= mtext->firstCol + mtext->visCol) {
+			mtext->firstCol = mtext->col - mtext->visCol + 1;
 		}
 	}
 }
-void MultiLineText::Enter() {
-	lin++;
-	if (lin >= firstLin + visLin) {
-		firstLin++;
-	}
-	InsertLine(lin, text[lin - 1].substr(col));
-	text[lin - 1].erase(col);
-	col = 0;
-	firstCol = 0;
-}
-void MultiLineText::Backspace() {
-	if (col > 0) {
-		col--;
-		text[lin].erase(col, 1);
-		if (col < firstCol) {
-			firstCol--;
+void MultiLineTextToNextColumn(MultiLineText* mtext) {
+	if (mtext->col < mtext->text[mtext->lin].size()) {
+		mtext->col++;
+		if (mtext->col >= mtext->firstCol + mtext->visCol) {
+			mtext->firstCol++;
 		}
 	}
-	else if (lin > 0) {
-		lin--;
-		if (lin < firstLin) {
-			firstLin = lin;
+	else if (mtext->lin < mtext->text.size() - 1) {
+		mtext->col = 0;
+		mtext->firstCol = 0;
+		mtext->lin++;
+		if (mtext->lin >= mtext->firstLin + mtext->visLin) {
+			mtext->firstLin++;
 		}
-		col = text[lin].size();
-		if (col >= firstCol + visCol) {
-			firstCol = col - 1;
-		}
-		MergeLines(lin, lin + 1);
 	}
 }
-void MultiLineText::Paste() {
+void MultiLineTextEnter(MultiLineText* mtext) {
+	mtext->lin++;
+	if (mtext->lin >= mtext->firstLin + mtext->visLin) {
+		mtext->firstLin++;
+	}
+	MultiLineTextInsertLine(mtext, mtext->lin, mtext->text[mtext->lin - 1].substr(mtext->col));
+	mtext->text[mtext->lin - 1].erase(mtext->col);
+	mtext->col = 0;
+	mtext->firstCol = 0;
+}
+void MultiLineTextBackspace(MultiLineText* mtext) {
+	if (mtext->col > 0) {
+		mtext->col--;
+		mtext->text[mtext->lin].erase(mtext->col, 1);
+		if (mtext->col < mtext->firstCol) {
+			mtext->firstCol--;
+		}
+	}
+	else if (mtext->lin > 0) {
+		mtext->lin--;
+		if (mtext->lin < mtext->firstLin) {
+			mtext->firstLin = mtext->lin;
+		}
+		mtext->col = mtext->text[mtext->lin].size();
+		if (mtext->col >= mtext->firstCol + mtext->visCol) {
+			mtext->firstCol = mtext->col - 1;
+		}
+		MultiLineTextMergeLines(mtext, mtext->lin, mtext->lin + 1);
+	}
+}
+void MultiLineTextPaste(MultiLineText* mtext) {
 	std::string clipboard = GetClipboardText();
 	size_t n = clipboard.size();
 	if (n == 0) return;
 
-	std::vector<std::string> temp = ParseText(clipboard);
-	lin = lin + temp.size() - 1;
-	col = temp[temp.size() - 1].size();
+	std::vector<std::string> temp = MultiLineTextParseText(mtext, clipboard);
+	mtext->lin = mtext->lin + temp.size() - 1;
+	mtext->col = temp[temp.size() - 1].size();
 
-	text = temp;
+	mtext->text = temp;
 }
-void MultiLineText::Copy() {
-	size_t sl = 0, sc = 0, el = text.size() - 1, ec = text[text.size() - 1].size(); // TODO: might break, would add size - 1
+void MultiLineTextCopy(MultiLineText* mtext) {
+	size_t sl = 0, sc = 0, el = mtext->text.size() - 1, ec = mtext->text[mtext->text.size() - 1].size(); // TODO: might break, would add size - 1
 
 	if (sl == el) {
-		SetClipboardText(text[sl].substr(sc, ec - sc).c_str());
+		SetClipboardText(mtext->text[sl].substr(sc, ec - sc).c_str());
 	}
 	else {
 		std::string res;
-		res += text[sl].substr(sc);
+		res += mtext->text[sl].substr(sc);
 		res += "\r\n";
 		for (size_t i = sl + 1; i < el; i++) {
-			res += text[i];
+			res += mtext->text[i];
 			res += "\r\n";
 		}
-		res += text[el].substr(0, ec);
-		if (text[el].size() == ec) {
+		res += mtext->text[el].substr(0, ec);
+		if (mtext->text[el].size() == ec) {
 			res += "\r\n";
 		}
 		SetClipboardText(res.c_str());
 	}
 }
-MultiLineText::MultiLineText(float startX, float startY, size_t visibleLines, size_t visibleColumns, Font font, float fontSize, float padding, Color textColor, Color bgColor)
-	: visLin(visibleLines)
-	, visCol(visibleColumns)
-	, font(font)
-	, fontSize(fontSize)
-	, padding(padding)
-	, textColor(textColor)
-	, bgColor(bgColor)
-{
-	chWidth = (fontSize * font.recs->width / font.baseSize) + font.glyphPadding / 2.0f;
+MultiLineText* NewMultiLineText(int startX, int startY, size_t visibleLines, size_t visibleColumns, Font font, float fontSize, float padding, Color textColor, Color bgColor) {
+	MultiLineText* mtext = new MultiLineText;
+	mtext->visLin = visibleLines;
+	mtext->visCol = visibleColumns;
+	mtext->font = font;
+	mtext->fontSize = fontSize;
+	mtext->padding = padding;
+	mtext->textColor = textColor;
+	mtext->bgColor = bgColor;
+	mtext->chWidth = (fontSize * font.recs->width / font.baseSize) + font.glyphPadding / 2.0f;
 
-	col = lin = 0;
-	text.push_back("");
+	mtext->col = mtext->lin = 0;
+	mtext->text.push_back("");
 
-	focused = false;
+	mtext->focused = false;
 
-	firstLin = firstCol = 0;
-	rec = { startX, startY, visibleColumns * chWidth + 2.0f * padding, visibleLines * fontSize + 2.0f * padding }; // TODO: this won t work for any font
+	mtext->firstLin = mtext->firstCol = 0;
+	// TODO: this won t work for any font
+	mtext->x = startX;
+	mtext->y = startY;
+	mtext->width = visibleColumns * mtext->chWidth + 2.0f * padding;
+	mtext->height = visibleLines * fontSize + 2.0f * padding;
+
+	return mtext;
 }
-MultiLineText::~MultiLineText() {
+void CleanupMultiLineText(MultiLineText* mtext) {
 
 }
-void MultiLineText::Draw() {
-	DrawRectangleRec(rec, bgColor);
+void MultiLineTextDraw(MultiLineText* mtext) {
+	DrawRectangle(mtext->x, mtext->y, mtext->width, mtext->height, mtext->bgColor);
 
-	for (size_t i = firstLin, posLin = 0; i < text.size() && i < firstLin + visLin; i++, posLin++) {
-		//if (text[i].empty()) continue;
-		if (text[i].size() < firstCol) continue;
+	for (size_t i = mtext->firstLin, posLin = 0; i < mtext->text.size() && i < mtext->firstLin + mtext->visLin; i++, posLin++) {
+		//if (mtext->text[i].empty()) continue;
+		if (mtext->text[i].size() < mtext->firstCol) continue;
 
-		size_t n = (firstCol + visCol) > text[i].size() ? text[i].size() - firstCol + 1 : visCol;
-		std::string cropped = text[i].substr(firstCol, n);
+		size_t n = (mtext->firstCol + mtext->visCol) > mtext->text[i].size() ? mtext->text[i].size() - mtext->firstCol + 1 : mtext->visCol;
+		std::string cropped = mtext->text[i].substr(mtext->firstCol, n);
 
-		DrawTextEx(font, cropped.c_str(), { rec.x + padding, rec.y + posLin * fontSize + padding }, fontSize, 2, textColor);
+		DrawTextEx(mtext->font, cropped.c_str(), { mtext->x + mtext->padding, mtext->y + posLin * mtext->fontSize + mtext->padding }, mtext->fontSize, 2, mtext->textColor);
 	}
 
 	/*std::string cursor;
-	cursor += std::to_string(lin);
+	cursor += std::to_string(mtext->lin);
 	cursor += "/";
-	cursor += std::to_string(text.size());
+	cursor += std::to_string(mtext->text.size());
 	cursor += ";";
-	cursor += std::to_string(col);
+	cursor += std::to_string(mtext->col);
 	cursor += "/";
-	cursor += std::to_string(text[lin].size());
-	DrawText(cursor.c_str(), rec.x + rec.width + 5, rec.y, fontSize, BLACK);*/
+	cursor += std::to_string(mtext->text[mtext->lin].size());
+	DrawText(cursor.c_str(), mtext->x + mtext->width + 5, mtext->y, fontSize, BLACK);*/
 
-	if (focused) {
-		// TODO: figure out how to calculate text width based on a given font
-		DrawLineV({ rec.x + padding + (col - firstCol) * chWidth, rec.y + padding + (lin - firstLin) * fontSize }, { rec.x + padding + (col - firstCol) * chWidth, rec.y + padding + (lin - firstLin + 1) * fontSize }, textColor);
+	if (mtext->focused) {
+		// TODO: figure out how to calculate mtext->text width based on a given font
+		DrawLineV({ mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, mtext->y + mtext->padding + (mtext->lin - mtext->firstLin) * mtext->fontSize }, { mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, mtext->y + mtext->padding + (mtext->lin - mtext->firstLin + 1) * mtext->fontSize }, mtext->textColor);
 	}
 }
-std::vector<std::string> MultiLineText::ParseText(std::string strToParse) {
+std::vector<std::string> MultiLineTextParseText(MultiLineText* mtext, std::string strToParse) {
 	size_t n = strToParse.size();
 	std::vector<std::string> temp;
 	size_t prev = 0;
@@ -212,12 +218,12 @@ std::vector<std::string> MultiLineText::ParseText(std::string strToParse) {
 
 	return temp;
 }
-void MultiLineText::PushLine(std::string line) {
-	text.push_back(line);
+void MultiLineTextPushLine(MultiLineText* mtext, std::string line) {
+	mtext->text.push_back(line);
 }
-void MultiLineText::Edit() {
+void MultiLineTextEdit(MultiLineText* mtext) {
 	auto mpos = GetMousePosition();
-	bool inBounds = (mpos.x >= rec.x && mpos.x < rec.x + rec.width) && (mpos.y >= rec.y && mpos.y < rec.y + rec.height);
+	bool inBounds = (mpos.x >= mtext->x && mpos.x < mtext->x + mtext->width) && (mpos.y >= mtext->y && mpos.y < mtext->y + mtext->height);
 	// TODO: maybe create a static member to avoid conflict
 	//if (inBounds) {
 	//	SetMouseCursor(MOUSE_CURSOR_IBEAM); // TODO: shouldn t set this that often
@@ -228,50 +234,45 @@ void MultiLineText::Edit() {
 
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 		if (inBounds) {
-			focused = true;
+			mtext->focused = true;
 		}
 		else {
-			focused = false;
+			mtext->focused = false;
 		}
 	}
 
-	if (!focused) return;
+	if (!mtext->focused) return;
 
 	int chr = GetCharPressed();
 	if (chr != 0) {
-		text[lin].insert(col, 1, chr);
-		if (text[lin].size() >= visCol) {
-			firstCol++;
+		mtext->text[mtext->lin].insert(mtext->col, 1, chr);
+		if (mtext->text[mtext->lin].size() >= mtext->visCol) {
+			mtext->firstCol++;
 		}
-		col++;
+		mtext->col++;
 	}
 
 	int key = GetKeyPressed();
 	if (key == 0) return;
 
 	if (key == KEY_UP) {
-		ToPreviousLine();
+		MultiLineTextToPreviousLine(mtext);
 	}
 	else if (key == KEY_DOWN) {
-		ToNextLine();
+		MultiLineTextToNextLine(mtext);
 	}
 	else if (key == KEY_LEFT) {
-		ToPreviousColumn();
+		MultiLineTextToPreviousColumn(mtext);
 	}
 	else if (key == KEY_RIGHT) {
-		ToNextColumn();
+		MultiLineTextToNextColumn(mtext);
 	}
 	else if (key == KEY_ENTER) {
-		Enter();
+		MultiLineTextEnter(mtext);
 	}
 	else if (key == KEY_BACKSPACE) {
-		Backspace();
+		MultiLineTextBackspace(mtext);
 	}
-
-	/*for (size_t i = 0; i < numLines; i++) {
-		std::cout << i << "/" << maxLines << ". " << text[i]->data() << ", " << text[i]->size() << "/" << text[i]->capacity() << "\n";
-	}
-	std::cout << "\n";*/
 
 	if (IsKeyDown(KEY_LEFT_CONTROL)) {
 		if (IsKeyPressed(KEY_S)) {
@@ -279,10 +280,32 @@ void MultiLineText::Edit() {
 			std::cout << "Command\n";
 		}
 		else if (IsKeyPressed(KEY_C)) {
-			Copy();
+			MultiLineTextCopy(mtext);
 		}
 		else if (IsKeyPressed(KEY_V)) {
-			Paste();
+			MultiLineTextPaste(mtext);
 		}
 	}
+}
+void MultiLineTextSetPosition(MultiLineText* mtext, int x, int y) {
+	mtext->x = x;
+	mtext->y = y;
+}
+bool MultiLineTextIsHovered(MultiLineText* mtext) {
+	int mx = GetMouseX(), my = GetMouseY();
+	return mx >= mtext->x && mx <= mtext->x + mtext->width && my >= mtext->y && my <= mtext->y + mtext->height;
+}
+bool MultiLineTextIsClicked(MultiLineText* mtext) {
+	return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && MultiLineTextIsHovered(mtext);
+}
+void MultiLineTextClear(MultiLineText* mtext) {
+	mtext->lin = mtext->col = 0;
+	mtext->firstLin = mtext->firstCol = 0;
+	mtext->limLin = mtext->limCol = 0;
+	mtext->text.clear();
+	mtext->text.push_back("");
+}
+void MultiLineTextSetLimit(MultiLineText* mtext, size_t limLin, size_t limCol) {
+	mtext->limLin = limLin;
+	mtext->limCol = limCol;
 }
