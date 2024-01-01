@@ -64,6 +64,7 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 		currentNode.address = ((ReadNode*)currentNode.address)->toPin->owner;
 		break;
 	case write:
+		EvaluateWriteNode((WriteNode*)currentNode.address, dict);
 		currentNode.type = ((WriteNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((WriteNode*)currentNode.address)->toPin->owner;
 		break;

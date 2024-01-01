@@ -123,6 +123,9 @@ int main() {
 		for (DecisionNode* p : nodes.decisionNodes) {
 			GetInputDecisionNode(p);
 		}
+		for (WriteNode* p : nodes.writeNodes) {
+			GetInputWriteNode(p);
+		}
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 			if (IsSingleLineTextClicked(inputLine)) {
@@ -330,9 +333,6 @@ int main() {
 		}
 		else if (state == processing) {
 			cout << "Processing\n";
-			if (currentNode.type == write) {
-				cout << GetWriteNodeVarValue((WriteNode*)currentNode.address) << "\n";
-			}
 			GetNextNodeInExecution(currentNode, state, dict);
 		}
 		else {
