@@ -91,6 +91,7 @@ void EvaluateWriteNode(WriteNode* node, Dictionary* dict) {
 	int result = evaluate(node->expression->str, dict, err);
 	if (err != 0) {
 		// TODO: popup
+		std::cout << err << "\n";
 	}
 	else {
 		node->myVarValue = result;

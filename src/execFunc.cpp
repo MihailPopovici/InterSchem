@@ -1,6 +1,7 @@
 #include "execFunc.h"
 
 #include "button.h"
+#include <string>
 
 void GetClickedNode(AnyNodeType& clickedNode, int mx, int my, NodeArrays& nodes) {
 	if (nodes.startNode != nullptr) {
@@ -48,7 +49,7 @@ void GetClickedNode(AnyNodeType& clickedNode, int mx, int my, NodeArrays& nodes)
 
 	clickedNode = { nullptr, noType };
 }
-void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dictionary* dict) {
+void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dictionary* dict, MultiLineText& console) {
 	if (currentNode.address == nullptr || currentNode.type == noType) {
 		state = done; // TODO: add error variant
 		return;
@@ -65,6 +66,7 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 		break;
 	case write:
 		EvaluateWriteNode((WriteNode*)currentNode.address, dict);
+		console.PushLine(std::to_string(((WriteNode*)currentNode.address)->myVarValue));
 		currentNode.type = ((WriteNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((WriteNode*)currentNode.address)->toPin->owner;
 		break;

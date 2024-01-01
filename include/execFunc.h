@@ -2,7 +2,7 @@
 
 #include "nodeComponents.h"
 #include "dictionary.h"
-//#include "uiComponents.h"
+#include "multilinetext.h"
 
 struct Button;
 
@@ -14,7 +14,7 @@ enum ExecutionState {
 };
 
 void GetClickedNode(AnyNodeType& clickedNode, int mx, int my, NodeArrays& nodes);
-void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dictionary* dict);
+void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dictionary* dict, MultiLineText& console);
 void DrawSelectedNodeOptions(AnyNodeType& node, Button* del, Button* edit, Button* linkVar);
 void DragNode(AnyNodeType& node, int mx, int my);
 void GetClickedPin(Pin*& pin, int mx, int my, NodeArrays& nodes);

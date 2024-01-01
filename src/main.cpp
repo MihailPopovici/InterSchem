@@ -18,7 +18,8 @@ enum EditorState {
 };
 
 int main() {
-	InitWindow(1020, 800, "Interschem");
+	InitWindow(1080, 800, "Interschem");
+	SetWindowState(FLAG_WINDOW_RESIZABLE);
 
 	AnyNodeType dragNode{ nullptr, noType };
 	AnyNodeType selectedNode{ nullptr, noType };
@@ -109,10 +110,22 @@ int main() {
 	SetSingleLineTextPadding(inputLine, 5);
 	SetSingleLineTextPosition(inputLine, 300, 5);
 
+	Font font = LoadFont("resources/IBMPlexMono-Medium.ttf");
+	MultiLineText console(650.0f, 600.0f, 8, 32, font, 20.0f, 5.0f, WHITE, BLACK);
+	console.PushLine("Insert value for x: ");
+	Window* consoleWin = NewWindow();
+	SetWindowColor(consoleWin, { 66, 66, 66, 255 });
+	SetWindowPosition(consoleWin, 650, 600);
+	SetWindowSpacing(consoleWin, 5.0f);
+	SetWindowPadding(consoleWin, 5.0f);
+	//AddElementToWindow(consoleWin, { &console, WindowElementTypeMultiLineText});
+
 	int dx=0, dy=0;
 	SetTargetFPS(120);
 	while (!WindowShouldClose()) {
 		//double t = GetTime();
+
+		console.Edit();
 
 		if (IsKeyPressed(KEY_Q)) {
 			EvaluateAssignNode(nodes.assignNodes[0], dict);
@@ -193,6 +206,7 @@ int main() {
 			}
 		}
 
+		DragWindow(consoleWin);
 		DragWindow(createNodes);
 		DragWindow(variables);
 
@@ -292,7 +306,8 @@ int main() {
 		}
 
 		if (IsButtonClicked(exec)) {
-			GetNextNodeInExecution(currentNode, state, dict);
+			//UpdateVariablesTable(nodes, dict);
+			GetNextNodeInExecution(currentNode, state, dict, console);
 		}
 		if (IsButtonClicked(createStartNode)) {
 			currentNode = dragNode = NewNode(nodes, start, 5, 20, mx, my);
@@ -328,12 +343,12 @@ int main() {
 				ReadNode* p = (ReadNode*)currentNode.address;
 				SetReadNodeVarValue(p, x);
 				ResizeDictionaryRow(GetDictionaryRow(dict, *p->myVarName));
-				GetNextNodeInExecution(currentNode, state, dict);
+				GetNextNodeInExecution(currentNode, state, dict, console);
 			}
 		}
 		else if (state == processing) {
 			cout << "Processing\n";
-			GetNextNodeInExecution(currentNode, state, dict);
+			GetNextNodeInExecution(currentNode, state, dict, console);
 		}
 		else {
 			cout << "Done\n";
@@ -346,6 +361,8 @@ int main() {
 		// render on screen
 		ClearBackground({ 33, 33, 33 });
 
+		console.Draw();
+		//DrawWindow(consoleWin);
 		DrawWindow(createNodes);
 		DrawWindow(variables);
 

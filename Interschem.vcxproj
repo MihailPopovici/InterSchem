@@ -140,6 +140,7 @@
     <ClCompile Include="src\evalExpression.cpp" />
     <ClCompile Include="src\execFunc.cpp" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\multilinetext.cpp" />
     <ClCompile Include="src\nodeComponents.cpp" />
     <ClCompile Include="src\pin.cpp" />
     <ClCompile Include="src\readNode.cpp" />
@@ -161,6 +162,7 @@
     <ClInclude Include="include\evalExpression.h" />
     <ClInclude Include="include\execFunc.h" />
     <ClInclude Include="include\fileFunc.h" />
+    <ClInclude Include="include\multilinetext.h" />
     <ClInclude Include="include\nodeComponents.h" />
     <ClInclude Include="include\nodeGeneral.h" />
     <ClInclude Include="include\pin.h" />

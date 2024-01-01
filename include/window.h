@@ -6,6 +6,8 @@
 enum WindowElementType {
 	WindowElementTypeButton,
 	WindowElementTypeDictionary, // only <string, int> for now
+	WindowElementTypeSingleLineText,
+	WindowElementTypeMultiLineText,
 };
 
 struct WindowElement {

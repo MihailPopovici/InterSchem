@@ -2,6 +2,7 @@
 
 #include "button.h"
 #include "dictionary.h"
+#include "multilinetext.h"
 
 Window* NewWindow() {
 	Window* p = new Window;
@@ -32,6 +33,10 @@ void SetWindowPosition(Window* win, int x, int y) {
 			Dictionary* d = (Dictionary*)e.ptr;
 			SetDictionaryPosition(d, d->x + dx, d->y + dy);
 		}
+		else if (e.type = WindowElementTypeMultiLineText) {
+			MultiLineText* m = (MultiLineText*)e.ptr;
+			m->SetPosition(m->rec.x + dx, m->rec.y + dy);
+		}
 	}
 	win->x = x;
 	win->y = y;
@@ -50,6 +55,11 @@ void SetWindowPadding(Window* win, float padding) {
 			Dictionary* d = (Dictionary*)e.ptr;
 			SetDictionaryPosition(d, d->x - win->padding + padding, win->y + height);
 			height += d->height + win->spacing;
+		}
+		else if (e.type == WindowElementTypeMultiLineText) {
+			MultiLineText* m = (MultiLineText*)e.ptr;
+			m->SetPosition(m->rec.x - win->padding + padding, win->y + height);
+			height += m->rec.height + win->spacing;
 		}
 	}
 	if (!win->elements.empty()) {
@@ -71,6 +81,11 @@ void SetWindowSpacing(Window* win, float spacing) {
 			Dictionary* d = (Dictionary*)e.ptr;
 			SetDictionaryPosition(d, d->x, win->y + height);
 			height += d->height + spacing;
+		}
+		else if (e.type == WindowElementTypeMultiLineText) {
+			MultiLineText* m = (MultiLineText*)e.ptr;
+			m->SetPosition(m->rec.x, win->y + height);
+			height += m->rec.height + spacing;
 		}
 	}
 	if (!win->elements.empty()) {
@@ -114,6 +129,23 @@ void AddElementToWindow(Window* win, WindowElement el) {
 		}
 		win->height += d->height;
 	}
+	else if (el.type == WindowElementTypeMultiLineText) {
+		MultiLineText* m = (MultiLineText*)el.ptr;
+		//m->window = win;
+		if (!win->elements.empty()) {
+			m->SetPosition(win->x + win->padding, win->y + win->height - win->padding + win->spacing);
+		}
+		else {
+			m->SetPosition(win->x + win->padding, win->y + win->height - win->padding);
+		}
+		if (m->rec.width + 2 * win->padding > win->width) {
+			win->width = m->rec.width + 2 * win->padding;
+		}
+		if (!win->elements.empty()) {
+			win->height += win->spacing;
+		}
+		win->height += m->rec.height;
+	}
 	win->elements.push_back(el); //TODO: validate
 }
 void DrawWindow(Window* win) {
@@ -124,6 +156,9 @@ void DrawWindow(Window* win) {
 		}
 		else if (e.type == WindowElementTypeDictionary) {
 			DrawDictionary((Dictionary*)e.ptr);
+		}
+		else if (e.type == WindowElementTypeMultiLineText) {
+			((MultiLineText*)e.ptr)->Draw();
 		}
 	}
 }
@@ -149,6 +184,11 @@ bool IsWindowElementClicked(Window* win) {
 				return true;
 			}
 		}
+		else if (e.type == WindowElementTypeMultiLineText) {
+			/*if (((MultiLineText*)e.ptr).IsClicked()) {
+				return true;
+			}*/
+		}
 	}
 	return false;
 }
@@ -170,6 +210,14 @@ void ResizeWindow(Window* win) {
 			height += d->height;
 			if (d->width > maxWidth) {
 				maxWidth = d->width;
+			}
+		}
+		else if (el.type == WindowElementTypeMultiLineText) {
+			MultiLineText* m = (MultiLineText*)el.ptr;
+			m->SetPosition(m->rec.x, win->y + height);
+			height += m->rec.height;
+			if (m->rec.width > maxWidth) {
+				maxWidth = m->rec.width;
 			}
 		}
 		height += win->spacing;

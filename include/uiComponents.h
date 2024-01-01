@@ -4,11 +4,8 @@
 #include "button.h"
 #include "dictionary.h"
 #include "singlelinetext.h"
+#include "multilinetext.h"
 
 struct Popup {
-
-};
-
-struct MultiLinetext {
 
 };
