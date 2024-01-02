@@ -7,9 +7,6 @@ void MultiLineTextMergeLines(MultiLineText* mtext, size_t destination, size_t so
 	mtext->text[destination] += mtext->text[source];
 	mtext->text.erase(mtext->text.begin() + source);
 }
-void MultiLineTextInsertLine(MultiLineText* mtext, size_t pos, std::string line) {
-	mtext->text.insert(mtext->text.begin() + pos, line);
-}
 void MultiLineTextToPreviousLine(MultiLineText* mtext) {
 	if (mtext->lin > 0 && mtext->lin > mtext->limLin) {
 		mtext->lin--;
@@ -39,13 +36,13 @@ void MultiLineTextToNextLine(MultiLineText* mtext) {
 	}
 }
 void MultiLineTextToPreviousColumn(MultiLineText* mtext) {
-	if (mtext->col > 0) { //TODO: aici ai ramas LUCA
+	if (mtext->col > 0 && ((mtext->lin == mtext->limLin && mtext->col > mtext->limCol) || mtext->lin > mtext->limLin)) {
 		mtext->col--;
 		if (mtext->col < mtext->firstCol) {
 			mtext->firstCol = mtext->col;
 		}
 	}
-	else if (mtext->lin > 0) {
+	else if (mtext->lin > 0 && (mtext->lin > mtext->limLin)) {
 		mtext->lin--;
 		if (mtext->lin < mtext->firstLin) {
 			mtext->firstLin = mtext->lin;
@@ -83,14 +80,14 @@ void MultiLineTextEnter(MultiLineText* mtext) {
 	mtext->firstCol = 0;
 }
 void MultiLineTextBackspace(MultiLineText* mtext) {
-	if (mtext->col > 0) {
+	if (mtext->col > 0 && ((mtext->lin == mtext->limLin && mtext->col > mtext->limCol) || mtext->lin > mtext->limLin)) {
 		mtext->col--;
 		mtext->text[mtext->lin].erase(mtext->col, 1);
 		if (mtext->col < mtext->firstCol) {
 			mtext->firstCol--;
 		}
 	}
-	else if (mtext->lin > 0) {
+	else if (mtext->lin > 0 && (mtext->lin > mtext->limLin)) {
 		mtext->lin--;
 		if (mtext->lin < mtext->firstLin) {
 			mtext->firstLin = mtext->lin;
@@ -218,8 +215,14 @@ std::vector<std::string> MultiLineTextParseText(MultiLineText* mtext, std::strin
 
 	return temp;
 }
+void MultiLineTextInsertLine(MultiLineText* mtext, size_t pos, std::string line) {
+	mtext->text.insert(mtext->text.begin() + pos, line);
+}
 void MultiLineTextPushLine(MultiLineText* mtext, std::string line) {
 	mtext->text.push_back(line);
+}
+void MultiLineTextOverrideLine(MultiLineText* mtext, size_t pos, std::string line) {
+	mtext->text[pos] = line;
 }
 void MultiLineTextEdit(MultiLineText* mtext) {
 	auto mpos = GetMousePosition();
@@ -308,4 +311,14 @@ void MultiLineTextClear(MultiLineText* mtext) {
 void MultiLineTextSetLimit(MultiLineText* mtext, size_t limLin, size_t limCol) {
 	mtext->limLin = limLin;
 	mtext->limCol = limCol;
+	if (mtext->lin < mtext->limLin) {
+		mtext->lin = mtext->limLin;
+	}
+	if (mtext->lin == mtext->limLin && mtext->col < mtext->limCol) {
+		mtext->col = limCol;
+	}
+}
+void MultiLineTextSetLimitMax(MultiLineText* mtext) {
+	mtext->lin = mtext->limLin = mtext->text.size() - 1;
+	mtext->col = mtext->limCol = mtext->text[mtext->limLin].size();
 }

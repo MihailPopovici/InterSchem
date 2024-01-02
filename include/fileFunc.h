@@ -1,9 +1,79 @@
 #pragma once
 
-void LoadSchemeFromFile() {
+#include "nodeComponents.h"
+#include <fstream>
+#include <iostream>
+#include <unordered_map>
+#include "pin.h";
 
+void SaveSchemeToFile(NodeArrays& nodes) {
+	std::ofstream file("data1.txt");
+	if (file.fail()) {
+		return;
+	}
+
+	file << nodes.startNode << " ";
+	if (nodes.startNode != nullptr) {
+		file << nodes.startNode->x << " " << nodes.startNode->y << " ";
+		file << nodes.startNode->toPin->owner;
+	}
+	file << "\n";
+	
+	file << nodes.readNodes.size() << "\n";
+	for (auto& p : nodes.readNodes) {
+		file << p << " " << p->x << " " << p->y << " " << p->toPin << "\n";
+	}
+	//TODO: la fel tb facut cu restul nodurilor, also nu uita sa salvezi mai mult decat poz lor
+
+	file.close();
 }
 
-void SaveSchemeToFile() {
+NodeArrays LoadSchemeFromFile() {
+	std::ifstream file("data1.txt");
+	if (file.fail()) {
+		return {};
+	}
+	
+	std::unordered_map<void*, AnyNodeType> oldToNew; // vechile adrese ale nodurilor -> noile adrese ale nodurilor
+	std::unordered_map<void*, Pin*> nodesInPin; // vechile adrese ale nodurilor -> adresa inPin-ului al noului nod corespunzator
+	std::unordered_map<AnyNodeType*, void*> links; // noile adrese ale nodurilor -> legatura (dintre vechiul nod) cu vechiul nod corespunzator
+	NodeArrays nodes;
+	void* node = nullptr;
+	file >> node;
+	if (node != nullptr) {
+		auto newNode = NewNode(nodes, start, 5, 20, 100, 100);
+		oldToNew[node] = newNode;
+		int x, y;
+		file >> x >> y;
+		SetStartNodePosition((StartNode*)newNode.address, x, y);
+		void* toNode = nullptr;
+		file >> toNode;
+		if (toNode != nullptr) {
+			links[&newNode] = toNode;
+		}
+	}
+	size_t n = 0;
+	file >> n;
+	for (size_t i = 1; i <= n; i++) {
+		file >> node;
+		auto newNode = NewNode(nodes, read, 5, 20, 100, 100);
+		oldToNew[node] = newNode;
+		nodesInPin[node] = &((ReadNode*)newNode.address)->inPin;
+		int x, y;
+		file >> x >> y;
+		SetReadNodePosition((ReadNode*)newNode.address, x, y);
+		void* toNode = nullptr;
+		file >> toNode;
+		if (toNode != nullptr) {
+			links[&newNode] = toNode;
+		}
+	}
+	for (auto& [from, to] : links) {
+		if (from->type == start) {
+			NewLink(((StartNode*)from->address)->toPin, *nodesInPin[to]);
+		}
+	}
 
+	file.close();
+	return nodes;
 }

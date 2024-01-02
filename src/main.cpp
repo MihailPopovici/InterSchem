@@ -3,9 +3,14 @@
 #include "nodeComponents.h"
 #include "uiComponents.h"
 #include "execFunc.h"
+#include "fileFunc.h"
 
 #include <iostream>
 using namespace std;
+
+#ifndef LOG_LINE(msg)
+#define LOG_LINE(msg) MultiLineTextPushLine(console, msg); MultiLineTextPushLine(console, ""); MultiLineTextSetLimitMax(console)
+#endif // LOG_LINE(msg)
 
 enum EditorState {
 	EditorStateNormal,
@@ -112,7 +117,8 @@ int main() {
 
 	Font font = LoadFont("resources/IBMPlexMono-Medium.ttf");
 	MultiLineText* console = NewMultiLineText(650, 500, 8, 32, font, 20.0f, 5.0f, WHITE, BLACK);
-	MultiLineTextPushLine(console, "Insert value for x: ");
+	MultiLineTextOverrideLine(console, 0, "Ouput:");
+	MultiLineTextSetLimitMax(console);
 	Window* consoleWin = NewWindow();
 	SetWindowColor(consoleWin, { 66, 66, 66, 255 });
 	SetWindowPosition(consoleWin, 650, 550);
@@ -124,11 +130,24 @@ int main() {
 	SetButtonLabel(clearConsole, "Clear", 20, 5);
 	AddElementToWindow(consoleWin, { clearConsole, WindowElementTypeButton });
 
+	NodeArrays secondNodes;
+
 	int dx = 0, dy = 0;
 	SetTargetFPS(120);
 	while (!WindowShouldClose()) {
 		//double t = GetTime();
 		
+		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
+			SaveSchemeToFile(nodes);
+			//cout << "Saved\n";
+			LOG_LINE("Saved");
+		}
+		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_L)) {
+			secondNodes = LoadSchemeFromFile();
+			swap(nodes, secondNodes);
+			//cout << "Loaded\n";
+			LOG_LINE("Loaded");
+		}
 		MultiLineTextEdit(console);
 
 		if (IsKeyPressed(KEY_Q)) {

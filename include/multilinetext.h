@@ -26,7 +26,6 @@ struct MultiLineText {
 };
 
 void MultiLineTextMergeLines(MultiLineText* mtext, size_t destination, size_t source);
-void MultiLineTextInsertLine(MultiLineText* mtext, size_t pos, std::string line);
 void MultiLineTextToPreviousLine(MultiLineText* mtext);
 void MultiLineTextToNextLine(MultiLineText* mtext);
 void MultiLineTextToPreviousColumn(MultiLineText* mtext);
@@ -39,10 +38,13 @@ MultiLineText* NewMultiLineText(int startX, int startY, size_t visibleLines, siz
 void CleanupMultiLineText(MultiLineText* mtext);
 void MultiLineTextDraw(MultiLineText* mtext);
 std::vector<std::string> MultiLineTextParseText(MultiLineText* mtext, std::string strToParse);
+void MultiLineTextInsertLine(MultiLineText* mtext, size_t pos, std::string line);
 void MultiLineTextPushLine(MultiLineText* mtext, std::string line = "");
+void MultiLineTextOverrideLine(MultiLineText* mtext, size_t pos, std::string line);
 void MultiLineTextEdit(MultiLineText* mtext);
 void MultiLineTextSetPosition(MultiLineText* mtext, int x, int y);
 bool MultiLineTextIsHovered(MultiLineText* mtext);
 bool MultiLineTextIsClicked(MultiLineText* mtext);
 void MultiLineTextClear(MultiLineText* mtext);
 void MultiLineTextSetLimit(MultiLineText* mtext, size_t limLin, size_t limCol);
+void MultiLineTextSetLimitMax(MultiLineText* mtext);
