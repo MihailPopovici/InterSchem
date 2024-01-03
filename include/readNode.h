@@ -10,13 +10,13 @@ struct ReadNode {
 	int fontSize, padding;
 	float x, y, width, height;
 
-	SingleLineText* varName;
+	SingleLineText* myVarName;
 
 	Pin inPin;
 	Pin outPin;
 	Pin* toPin;
 
-	std::string* myVarName;
+	std::string* old_myVarName;
 	int* myVarValue;
 };
 
@@ -27,6 +27,5 @@ void DrawReadNode(ReadNode* node);
 void LinkReadNodeVar(ReadNode* node, std::string* name, int* val);
 void SetReadNodeVarValue(ReadNode* node, int x);
 
-void EvaluateReadNode(ReadNode* node, Dictionary* dict);
 void ResizeReadNode(ReadNode* node);
 void GetInputReadNode(ReadNode* node);

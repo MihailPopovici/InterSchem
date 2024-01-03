@@ -61,7 +61,6 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 		currentNode.address = ((StartNode*)currentNode.address)->toPin->owner;
 		break;
 	case read:
-		EvaluateReadNode((ReadNode*)currentNode.address, dict);
 		currentNode.type = ((ReadNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((ReadNode*)currentNode.address)->toPin->owner;
 		break;
@@ -98,6 +97,8 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 	}
 
 	if (currentNode.type == read) {
+		MultiLineTextPushString(console, "Input value:");
+		MultiLineTextSetLimitMax(console);
 		state = waitingForInput;
 	}
 	else if (currentNode.type == stop) {
@@ -359,12 +360,12 @@ void EraseNodeLinks(NodeArrays& nodes, Pin* inPin) {
 }
 void UpdateVariablesTable(NodeArrays& nodes, Dictionary* dict) {
 	for (ReadNode* node : nodes.readNodes) {
-		bool correctInput = isVariable(node->varName->str) && correctVariableName(node->varName->str);
+		bool correctInput = isVariable(node->myVarName->str) && correctVariableName(node->myVarName->str);
 		if (correctInput) {
-			auto drow = GetDictionaryRow(dict, node->varName->str);
+			auto drow = GetDictionaryRow(dict, node->myVarName->str);
 			if (drow == nullptr) {
 				DictionaryRow* row = NewDictionaryRow();
-				SetDictionaryRowData(row, node->varName->str, 0, 20, 5);
+				SetDictionaryRowData(row, node->myVarName->str, 0, 20, 5);
 				AddDictionaryRow(dict, row);
 				ResizeDictionary(dict);
 			}
@@ -374,12 +375,12 @@ void UpdateVariablesTable(NodeArrays& nodes, Dictionary* dict) {
 		}
 	}
 	for (AssignNode* node : nodes.assignNodes) {
-		bool correctInput = isVariable(node->varName->str) && correctVariableName(node->varName->str);
+		bool correctInput = isVariable(node->myVarName->str) && correctVariableName(node->myVarName->str);
 		if (correctInput) {
-			auto drow = GetDictionaryRow(dict, node->varName->str);
+			auto drow = GetDictionaryRow(dict, node->myVarName->str);
 			if (drow == nullptr) {
 				DictionaryRow* row = NewDictionaryRow();
-				SetDictionaryRowData(row, node->varName->str, 0, 20, 5);
+				SetDictionaryRowData(row, node->myVarName->str, 0, 20, 5);
 				AddDictionaryRow(dict, row);
 				ResizeDictionary(dict);
 			}

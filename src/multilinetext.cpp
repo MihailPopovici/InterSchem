@@ -221,6 +221,9 @@ void MultiLineTextInsertLine(MultiLineText* mtext, size_t pos, std::string line)
 void MultiLineTextPushLine(MultiLineText* mtext, std::string line) {
 	mtext->text.push_back(line);
 }
+void MultiLineTextPushString(MultiLineText* mtext, std::string str) {
+	mtext->text[mtext->limLin] += str;
+}
 void MultiLineTextOverrideLine(MultiLineText* mtext, size_t pos, std::string line) {
 	mtext->text[pos] = line;
 }
@@ -321,4 +324,12 @@ void MultiLineTextSetLimit(MultiLineText* mtext, size_t limLin, size_t limCol) {
 void MultiLineTextSetLimitMax(MultiLineText* mtext) {
 	mtext->lin = mtext->limLin = mtext->text.size() - 1;
 	mtext->col = mtext->limCol = mtext->text[mtext->limLin].size();
+}
+int MultiLineTextGetNextInt(MultiLineText* mtext) {
+	std::string str = "";
+	while (mtext->text[mtext->limLin][mtext->limCol] != ' ' && mtext->limCol < mtext->text[mtext->limLin].size()) {
+		str += mtext->text[mtext->limLin][mtext->limCol];
+		mtext->limCol++;
+	}
+	return std::stoi(str);
 }

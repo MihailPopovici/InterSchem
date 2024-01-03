@@ -105,7 +105,7 @@ int main() {
 
 	Font font = LoadFont("resources/IBMPlexMono-Medium.ttf");
 	MultiLineText* console = NewMultiLineText(650, 500, 8, 32, font, 20.0f, 5.0f, WHITE, BLACK);
-	MultiLineTextOverrideLine(console, 0, "Ouput:");
+	MultiLineTextOverrideLine(console, 0, "");
 	MultiLineTextSetLimitMax(console);
 	Window* consoleWin = NewWindow();
 	SetWindowColor(consoleWin, { 66, 66, 66, 255 });
@@ -350,16 +350,17 @@ int main() {
 		}
 		else if (state == waitingForInput) {
 			cout << "Waiting for input\n";
-			char c = GetCharPressed();
+			/*char c = GetCharPressed();
 			if (c != 0 && (c >= '0' && c <= '9')) {
 				inBuffer.insert(inBuffer.end(), c);
-			}
+			}*/
 
 			if (IsKeyPressed(KEY_ENTER)) {
-				int x = stoi(inBuffer);
+				int x = MultiLineTextGetNextInt(console);
+				MultiLineTextSetLimitMax(console);
 				ReadNode* p = (ReadNode*)currentNode.address;
-				//SetReadNodeVarValue(p, x);
-				//ResizeDictionaryRow(GetDictionaryRow(dict, *p->myVarName));
+				auto drow = GetDictionaryRow(dict, p->myVarName->str);
+				SetDictionaryRowValue(drow, x);
 				GetNextNodeInExecution(currentNode, state, dict, console);
 			}
 		}

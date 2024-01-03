@@ -116,7 +116,7 @@ void ResizeDecisionNode(DecisionNode* node) {
 	node->outPinFalse.x = node->x + node->width;
 }
 void GetInputDecisionNode(DecisionNode* node) {
-	//std::cout << node->varName << " " << node->expression << "\n";
+	//std::cout << node->myVarName << " " << node->expression << "\n";
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 		node->expression->focused = IsSingleLineTextClicked(node->expression);
 	}

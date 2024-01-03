@@ -11,11 +11,11 @@ ReadNode* NewReadNode(int padding, int fontSize, float x, float y) {
 	p->fontSize = 0;
 	p->padding = 0;
 
-	p->varName = NewSingleLineText();
-	SetSingleLineTextColors(p->varName, { 100, 100, 100, 70 }, WHITE);
-	SetSingleLineTextPadding(p->varName, 5);
-	SetSingleLineTextFontSize(p->varName, 20);
-	SetSingleLineTextPosition(p->varName, 0, 0);
+	p->myVarName = NewSingleLineText();
+	SetSingleLineTextColors(p->myVarName, { 100, 100, 100, 70 }, WHITE);
+	SetSingleLineTextPadding(p->myVarName, 5);
+	SetSingleLineTextFontSize(p->myVarName, 20);
+	SetSingleLineTextPosition(p->myVarName, 0, 0);
 
 	p->x = 0.0f;
 	p->y = 0.0f;
@@ -41,7 +41,7 @@ ReadNode* NewReadNode(int padding, int fontSize, float x, float y) {
 	p->toPin = nullptr;
 
 	p->myVarValue = nullptr;
-	p->myVarName = nullptr;
+	p->old_myVarName = nullptr;
 
 	SetReadNodePosition(p, x, y);
 	SetReadNodeSize(p, padding, fontSize);
@@ -51,7 +51,7 @@ ReadNode* NewReadNode(int padding, int fontSize, float x, float y) {
 void SetReadNodeSize(ReadNode* node, int padding, int fontSize) {
 	node->padding = padding;
 	node->fontSize = fontSize;
-	node->width = MeasureText(node->varName->str.c_str(), fontSize) + 2 * padding + 2 * 5;
+	node->width = MeasureText(node->myVarName->str.c_str(), fontSize) + 2 * padding + 2 * 5;
 	node->height = fontSize + 2 * padding + 2 * 5;
 
 	node->inPin.x = node->x + node->width / 2.0f;
@@ -59,7 +59,7 @@ void SetReadNodeSize(ReadNode* node, int padding, int fontSize) {
 
 	node->outPin.x = node->x + node->width / 2.0f;
 	node->outPin.y = node->y + node->height;
-	SetSingleLineTextPosition(node->varName, node->x + node->padding, node->y + node->padding);
+	SetSingleLineTextPosition(node->myVarName, node->x + node->padding, node->y + node->padding);
 }
 void SetReadNodePosition(ReadNode* node, float x, float y) {
 	node->x = x;
@@ -70,52 +70,46 @@ void SetReadNodePosition(ReadNode* node, float x, float y) {
 
 	node->outPin.x = node->x + node->width / 2.0f;
 	node->outPin.y = node->y + node->height;
-	SetSingleLineTextPosition(node->varName, node->x + node->padding, node->y + node->padding);
+	SetSingleLineTextPosition(node->myVarName, node->x + node->padding, node->y + node->padding);
 }
 void DrawReadNode(ReadNode* node) {
 	DrawRectangle(node->x, node->y, node->width, node->height, YELLOW);
-	DrawSingleLineText(node->varName);
+	DrawSingleLineText(node->myVarName);
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 	DrawLink(node->outPin, node->toPin);
 }
 void LinkReadNodeVar(ReadNode* node, std::string* name, int* val) {
-	node->myVarName = name;
+	node->old_myVarName = name;
 	node->myVarValue = val;
 }
 void SetReadNodeVarValue(ReadNode* node, int x) {
 	*(node->myVarValue) = x;
 }
-
-
-void EvaluateReadNode(ReadNode* node, Dictionary* dict) {
-	auto drow = GetDictionaryRow(dict, node->varName->str);
-	SetDictionaryRowValue(drow, 10);//TODO:set value to input from console
-}
 void ResizeReadNode(ReadNode* node) {
-	int varNameWidth = MeasureText(node->varName->str.c_str(), node->fontSize);
+	int varNameWidth = MeasureText(node->myVarName->str.c_str(), node->fontSize);
 	node->width = 2 * node->padding + varNameWidth + 2 * 5;
-	SetSingleLineTextPosition(node->varName, node->x + node->padding, node->y + node->padding);
+	SetSingleLineTextPosition(node->myVarName, node->x + node->padding, node->y + node->padding);
 
 	node->inPin.x = node->x + node->width / 2.0f;
 	node->outPin.x = node->x + node->width / 2.0f;
 }
 void GetInputReadNode(ReadNode* node) {
-	//std::cout << node->varName << " " << node->expression << "\n";
+	//std::cout << node->myVarName << " " << node->expression << "\n";
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-		node->varName->focused = IsSingleLineTextClicked(node->varName);
+		node->myVarName->focused = IsSingleLineTextClicked(node->myVarName);
 	}
-	if (node->varName->focused) {
+	if (node->myVarName->focused) {
 		char c = GetCharPressed();
 		if (c != 0) {
-			InsertCharSingleLineText(node->varName, c);
+			InsertCharSingleLineText(node->myVarName, c);
 			ResizeReadNode(node);
 		}
 	}
 
 	if (IsKeyPressed(KEY_BACKSPACE)) {
-		if (node->varName->focused) {
-			EraseCharSingleLineText(node->varName);
+		if (node->myVarName->focused) {
+			EraseCharSingleLineText(node->myVarName);
 		}
 		ResizeReadNode(node);
 	}

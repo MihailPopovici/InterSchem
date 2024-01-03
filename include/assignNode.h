@@ -10,7 +10,7 @@ struct AssignNode {
 	int fontSize, padding;
 	float x, y, width, height;
 
-	SingleLineText* varName;
+	SingleLineText* myVarName;
 	SingleLineText* expression;
 
 	Pin inPin;
@@ -18,7 +18,7 @@ struct AssignNode {
 	Pin* toPin;
 
 	// pe nod
-	// myVarName = expression
+	// old_myVarName = expression
 	// result = eval(expression)
 	// myVarValue = result
 };

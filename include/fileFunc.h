@@ -19,7 +19,7 @@ void SaveSchemeToFile(NodeArrays& nodes) {
 			file << nodes.startNode->toPin->owner;
 		}
 		else {
-			file << nullptr;
+			file << 0;
 		}
 	}
 	file << "\n";
@@ -31,11 +31,10 @@ void SaveSchemeToFile(NodeArrays& nodes) {
 			file << p->toPin->owner;
 		}
 		else {
-			file << nullptr;
+			file << 0;
 		}
 		file << "\n";
 	}
-	file << "\n";
 
 	file << nodes.writeNodes.size() << "\n";
 	for (auto& p : nodes.writeNodes) {
@@ -44,7 +43,7 @@ void SaveSchemeToFile(NodeArrays& nodes) {
 			file << p->toPin->owner;
 		}
 		else {
-			file << nullptr;
+			file << 0;
 		}
 		file << "\n";
 	}
