@@ -20,3 +20,4 @@ void DragNode(AnyNodeType& node, int mx, int my);
 void GetClickedPin(Pin*& pin, int mx, int my, NodeArrays& nodes);
 void EraseNode(NodeArrays& nodes, AnyNodeType node);
 void EraseNodeLinks(NodeArrays& nodes, Pin* inPin);
+void UpdateVariablesTable(NodeArrays& nodes, Dictionary* dict);

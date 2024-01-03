@@ -86,18 +86,6 @@ int main() {
 
 	Dictionary* dict = NewDictionary();
 	SetDictionaryPosition(dict, 100, 100);
-	DictionaryRow* r1 = NewDictionaryRow();
-	SetDictionaryRowData(r1, "a", 1, 20, 5);
-	DictionaryRow* r2 = NewDictionaryRow();
-	SetDictionaryRowData(r2, "b", 44, 20, 5);
-	DictionaryRow* r3 = NewDictionaryRow();
-	SetDictionaryRowData(r3, "c", 3, 20, 5);
-	DictionaryRow* r4 = NewDictionaryRow();
-	SetDictionaryRowData(r4, "bruh", 420, 20, 5);
-	AddDictionaryRow(dict, r1);
-	AddDictionaryRow(dict, r2);
-	AddDictionaryRow(dict, r3);
-	AddDictionaryRow(dict, r4);
 	SetDictionaryPadding(dict, 5);
 	SetDictionarySpacing(dict, 5);
 	Window* variables = NewWindow();
@@ -124,7 +112,7 @@ int main() {
 	SetWindowPosition(consoleWin, 650, 550);
 	SetWindowSpacing(consoleWin, 5.0f);
 	SetWindowPadding(consoleWin, 5.0f);
-	AddElementToWindow(consoleWin, { console, WindowElementTypeMultiLineText});
+	AddElementToWindow(consoleWin, { console, WindowElementTypeMultiLineText });
 	Button* clearConsole = NewButton();
 	SetButtonColors(clearConsole, BLANK, WHITE);
 	SetButtonLabel(clearConsole, "Clear", 20, 5);
@@ -136,7 +124,7 @@ int main() {
 	SetTargetFPS(120);
 	while (!WindowShouldClose()) {
 		//double t = GetTime();
-		
+
 		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
 			SaveSchemeToFile(nodes);
 			//cout << "Saved\n";
@@ -161,6 +149,9 @@ int main() {
 		}
 		for (WriteNode* p : nodes.writeNodes) {
 			GetInputWriteNode(p);
+		}
+		for (ReadNode* p : nodes.readNodes) {
+			GetInputReadNode(p);
 		}
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
@@ -236,7 +227,7 @@ int main() {
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 			if (edState == EditorStateNormal) {
 				GetClickedNode(dragNode, mx, my, nodes);
-				if (dragNode.type != noType && dragNode.address!=nullptr) {
+				if (dragNode.type != noType && dragNode.address != nullptr) {
 					if (dragNode.type == start) {
 						dx = ((StartNode*)dragNode.address)->x;
 						dy = ((StartNode*)dragNode.address)->y;
@@ -275,7 +266,7 @@ int main() {
 					edState = EditorStateAddingLink;
 				}
 			}
-			else if(edState == EditorStateAddingLink){
+			else if (edState == EditorStateAddingLink) {
 				Pin* secondPin = nullptr;
 				GetClickedPin(secondPin, mx, my, nodes);
 				if (secondPin != nullptr && secondPin->type == input && selectedPin != nullptr) {
@@ -285,9 +276,9 @@ int main() {
 					case write: NewLink(((WriteNode*)selectedPin->owner)->toPin, *secondPin); break;
 					case assign: NewLink(((AssignNode*)selectedPin->owner)->toPin, *secondPin); break;
 					case decision:
-						if(selectedPin == &((DecisionNode*)selectedPin->owner)->outPinTrue)
+						if (selectedPin == &((DecisionNode*)selectedPin->owner)->outPinTrue)
 							NewLink(((DecisionNode*)selectedPin->owner)->toPinTrue, *secondPin);
-						else 
+						else
 							NewLink(((DecisionNode*)selectedPin->owner)->toPinFalse, *secondPin);
 						break;
 					default: break;
@@ -329,7 +320,7 @@ int main() {
 		}
 
 		if (IsButtonClicked(exec)) {
-			//UpdateVariablesTable(nodes, dict);
+			UpdateVariablesTable(nodes, dict);
 			GetNextNodeInExecution(currentNode, state, dict, console);
 		}
 		if (IsButtonClicked(createStartNode)) {
@@ -367,8 +358,8 @@ int main() {
 			if (IsKeyPressed(KEY_ENTER)) {
 				int x = stoi(inBuffer);
 				ReadNode* p = (ReadNode*)currentNode.address;
-				SetReadNodeVarValue(p, x);
-				ResizeDictionaryRow(GetDictionaryRow(dict, *p->myVarName));
+				//SetReadNodeVarValue(p, x);
+				//ResizeDictionaryRow(GetDictionaryRow(dict, *p->myVarName));
 				GetNextNodeInExecution(currentNode, state, dict, console);
 			}
 		}
