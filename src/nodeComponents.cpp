@@ -4,16 +4,11 @@ AnyNodeType NewNode(NodeArrays& nodes, NodeType type, int padding, int fontSize,
 	AnyNodeType res = { nullptr, noType };
 	if (type == start) {
 		res.address = nodes.startNode = NewStartNode(padding, fontSize, x, y);
-		nodes.startNode->id = nodes.globalNodeID++;
-		nodes.startNode->outPin.id = nodes.globalPinID++;
 		res.type = start;
 		return res;
 	}
 	if(type == stop) {
 		StopNode* s = NewStopNode(padding, fontSize, x, y);
-		s->id = nodes.globalNodeID++;
-		s->index = nodes.stopNodes.size();
-		s->inPin.id = nodes.globalPinID++;
 		nodes.stopNodes.push_back(s);
 		res.address = s;
 		res.type = stop;
@@ -21,9 +16,6 @@ AnyNodeType NewNode(NodeArrays& nodes, NodeType type, int padding, int fontSize,
 	}
 	if(type == read) {
 		ReadNode* r = NewReadNode(padding, fontSize, x, y);
-		r->id = nodes.globalNodeID++;
-		r->index = nodes.readNodes.size();
-		r->inPin.id = nodes.globalPinID++;
 		nodes.readNodes.push_back(r);
 		res.address = r;
 		res.type = read;
@@ -31,9 +23,6 @@ AnyNodeType NewNode(NodeArrays& nodes, NodeType type, int padding, int fontSize,
 	}
 	if (type == write)	{
 		WriteNode* w = NewWriteNode(padding, fontSize, x, y);
-		w->id = nodes.globalNodeID++;
-		w->index = nodes.writeNodes.size();
-		w->inPin.id = nodes.globalPinID++;
 		nodes.writeNodes.push_back(w);
 		res.address = w;
 		res.type = write;
@@ -41,9 +30,6 @@ AnyNodeType NewNode(NodeArrays& nodes, NodeType type, int padding, int fontSize,
 	}
 	if (type == assign) {
 		AssignNode* a = NewAssignNode(padding, fontSize, x, y);
-		a->id = nodes.globalNodeID++;
-		a->index = nodes.assignNodes.size();
-		a->inPin.id = nodes.globalPinID++;
 		nodes.assignNodes.push_back(a);
 		res.address = a;
 		res.type = assign;
@@ -51,10 +37,6 @@ AnyNodeType NewNode(NodeArrays& nodes, NodeType type, int padding, int fontSize,
 	}
 	if (type == decision) {
 		DecisionNode* d = NewDecisionNode(padding, fontSize, x, y);
-		d->id = nodes.globalNodeID++;
-		d->index = nodes.decisionNodes.size();
-		d->outPinTrue.id = nodes.globalPinID++;
-		d->outPinFalse.id = nodes.globalPinID++;
 		nodes.decisionNodes.push_back(d);
 		res.address = d;
 		res.type = decision;

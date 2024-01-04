@@ -58,22 +58,21 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 	switch (currentNode.type) {
 	case start:
 		currentNode.type = ((StartNode*)currentNode.address)->toPin->ownerType;
-		currentNode.address = ((StartNode*)currentNode.address)->toPin->owner;
+		currentNode.address = ((StartNode*)currentNode.address)->toPin->ownerPtr;
 		break;
 	case read:
 		currentNode.type = ((ReadNode*)currentNode.address)->toPin->ownerType;
-		currentNode.address = ((ReadNode*)currentNode.address)->toPin->owner;
+		currentNode.address = ((ReadNode*)currentNode.address)->toPin->ownerPtr;
 		break;
 	case write:
-		EvaluateWriteNode((WriteNode*)currentNode.address, dict);
-		MultiLineTextPushLine(console, std::to_string(((WriteNode*)currentNode.address)->myVarValue));
+		MultiLineTextPushLine(console, std::to_string(EvaluateWriteNode((WriteNode*)currentNode.address, dict)));
 		currentNode.type = ((WriteNode*)currentNode.address)->toPin->ownerType;
-		currentNode.address = ((WriteNode*)currentNode.address)->toPin->owner;
+		currentNode.address = ((WriteNode*)currentNode.address)->toPin->ownerPtr;
 		break;
 	case assign: {
 		EvaluateAssignNode((AssignNode*)currentNode.address, dict);
 		currentNode.type = ((AssignNode*)currentNode.address)->toPin->ownerType;
-		currentNode.address = ((AssignNode*)currentNode.address)->toPin->owner;
+		currentNode.address = ((AssignNode*)currentNode.address)->toPin->ownerPtr;
 		break;
 	}
 	case decision: {
@@ -84,11 +83,11 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 		}
 		else if (result == 1) {
 			currentNode.type = ((DecisionNode*)currentNode.address)->toPinTrue->ownerType;
-			currentNode.address = ((DecisionNode*)currentNode.address)->toPinTrue->owner;
+			currentNode.address = ((DecisionNode*)currentNode.address)->toPinTrue->ownerPtr;
 		}
 		else {
 			currentNode.type = ((DecisionNode*)currentNode.address)->toPinFalse->ownerType;
-			currentNode.address = ((DecisionNode*)currentNode.address)->toPinFalse->owner;
+			currentNode.address = ((DecisionNode*)currentNode.address)->toPinFalse->ownerPtr;
 		}
 		break;
 	}
@@ -109,51 +108,9 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 	}
 }
 void DrawSelectedNodeOptions(AnyNodeType& node, Button* del, Button* edit, Button* linkVar) { //TODO: asta n ar tb sa fie aici
-	int x = 0, y = 0, width = 0, height = 0;
-
-	if (node.type == start) {
-		StartNode* n = (StartNode*)node.address;
-		x = n->x;
-		y = n->y;
-		width = n->width;
-		height = n->height;
-	}
-	else if (node.type == read) {
-		ReadNode* n = (ReadNode*)node.address;
-		x = n->x;
-		y = n->y;
-		width = n->width;
-		height = n->height;
-	}
-	else if (node.type == write) {
-		WriteNode* n = (WriteNode*)node.address;
-		x = n->x;
-		y = n->y;
-		width = n->width;
-		height = n->height;
-	}
-	else if (node.type == assign) {
-		AssignNode* n = (AssignNode*)node.address;
-		x = n->x;
-		y = n->y;
-		width = n->width;
-		height = n->height;
-	}
-	else if (node.type == decision) {
-		DecisionNode* n = (DecisionNode*)node.address;
-		x = n->x;
-		y = n->y;
-		width = n->width;
-		height = n->height;
-	}
-	else {
-		StopNode* n = (StopNode*)node.address;
-		x = n->x;
-		y = n->y;
-		width = n->width;
-		height = n->height;
-	}
-
+	int* pos = (int*)node.address;
+	int x = *pos, y = *(pos + 1), width = *(pos + 2), height = *(pos + 3);
+	
 	DrawRectangle(x - 2, y - 2, width + 4, height + 4, WHITE);
 
 	SetButtonPosition(del, x + width + 7, y + (height - del->height) / 2);

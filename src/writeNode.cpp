@@ -4,9 +4,8 @@
 #include <cstring>
 #include <iostream>
 
-WriteNode* NewWriteNode(int padding, int fontSize, float x, float y) {
+WriteNode* NewWriteNode(int padding, int fontSize, int x, int y) {
 	WriteNode* p = new WriteNode;
-	p->id = -1;
 	p->fontSize = 0;
 	p->padding = 0;
 
@@ -21,25 +20,21 @@ WriteNode* NewWriteNode(int padding, int fontSize, float x, float y) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = 0;
 	p->inPin.type = input;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
-	p->inPin.owner = p;
+	p->inPin.ownerPtr = p;
 	p->inPin.ownerType = write;
 
-	p->outPin.id = 0;
 	p->outPin.type = output;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
-	p->outPin.owner = p;
+	p->outPin.ownerPtr = p;
 	p->outPin.ownerType = write;
 
 	p->toPin = nullptr;
-
-	p->myVarValue = 0;
 
 	SetWriteNodePosition(p, x, y);
 	SetWriteNodeSize(p, padding, fontSize);
@@ -60,7 +55,7 @@ void SetWriteNodeSize(WriteNode* node, int padding, int fontSize) {
 
 	SetSingleLineTextPosition(node->expression, node->x + node->padding, node->y + node->padding);
 }
-void SetWriteNodePosition(WriteNode* node, float x, float y) {
+void SetWriteNodePosition(WriteNode* node, int x, int y) {
 	node->x = x;
 	node->y = y;
 
@@ -79,14 +74,7 @@ void DrawWriteNode(WriteNode* node) {
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 	DrawLink(node->outPin, node->toPin);
 }
-void LinkWriteNodeVar(WriteNode* node, int* x) {
-	//node->myVarValue = x;
-}
-int GetWriteNodeVarValue(WriteNode* node) {
-	return node->myVarValue;
-}
-
-void EvaluateWriteNode(WriteNode* node, Dictionary* dict) {
+int EvaluateWriteNode(WriteNode* node, Dictionary* dict) {
 	int err = 0;
 	int result = evaluate(node->expression->str, dict, err);
 	if (err != 0) {
@@ -94,11 +82,9 @@ void EvaluateWriteNode(WriteNode* node, Dictionary* dict) {
 		std::cout << err << "\n";
 	}
 	else {
-		node->myVarValue = result;
-		std::cout << GetWriteNodeVarValue(node) << "\n";
+		return result;
 	}
 }
-
 void ResizeWriteNode(WriteNode* node) {
 	int expressionWidth = MeasureText(node->expression->str.c_str(), node->fontSize);
 	node->width = 2 * node->padding + expressionWidth + 2 * 5;

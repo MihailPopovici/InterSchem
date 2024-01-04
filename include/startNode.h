@@ -3,16 +3,13 @@
 #include "pin.h"
 
 struct StartNode {
-	int id;
-	char* label;
+	int x, y, width, height; // TODO: float or int?
 	int fontSize, padding;
-	float x, y, width, height; // TODO: float or int?
-
 	Pin outPin;
 	Pin* toPin;
 };
 
-StartNode* NewStartNode(int padding, int fontSize, float x, float y);
+StartNode* NewStartNode(int padding, int fontSize, int x, int y);
 void SetStartNodeSize(StartNode* node, int padding, int fontSize);
-void SetStartNodePosition(StartNode* node, float x, float y);
+void SetStartNodePosition(StartNode* node, int x, int y);
 void DrawStartNode(StartNode* node);

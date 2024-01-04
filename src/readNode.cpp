@@ -4,10 +4,8 @@
 #include <cstring>
 #include <iostream>
 
-ReadNode* NewReadNode(int padding, int fontSize, float x, float y) {
+ReadNode* NewReadNode(int padding, int fontSize, int x, int y) {
 	ReadNode* p = new ReadNode;
-	p->id = -1;
-	p->index = -1;
 	p->fontSize = 0;
 	p->padding = 0;
 
@@ -22,26 +20,21 @@ ReadNode* NewReadNode(int padding, int fontSize, float x, float y) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = 0;
 	p->inPin.type = input;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
-	p->inPin.owner = p;
+	p->inPin.ownerPtr = p;
 	p->inPin.ownerType = read;
 
-	p->outPin.id = 0;
 	p->outPin.type = output;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
-	p->outPin.owner = p;
+	p->outPin.ownerPtr = p;
 	p->outPin.ownerType = read;
 
 	p->toPin = nullptr;
-
-	p->myVarValue = nullptr;
-	p->old_myVarName = nullptr;
 
 	SetReadNodePosition(p, x, y);
 	SetReadNodeSize(p, padding, fontSize);
@@ -61,7 +54,7 @@ void SetReadNodeSize(ReadNode* node, int padding, int fontSize) {
 	node->outPin.y = node->y + node->height;
 	SetSingleLineTextPosition(node->myVarName, node->x + node->padding, node->y + node->padding);
 }
-void SetReadNodePosition(ReadNode* node, float x, float y) {
+void SetReadNodePosition(ReadNode* node, int x, int y) {
 	node->x = x;
 	node->y = y;
 
@@ -79,13 +72,6 @@ void DrawReadNode(ReadNode* node) {
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 	DrawLink(node->outPin, node->toPin);
 }
-void LinkReadNodeVar(ReadNode* node, std::string* name, int* val) {
-	node->old_myVarName = name;
-	node->myVarValue = val;
-}
-void SetReadNodeVarValue(ReadNode* node, int x) {
-	*(node->myVarValue) = x;
-}
 void ResizeReadNode(ReadNode* node) {
 	int varNameWidth = MeasureText(node->myVarName->str.c_str(), node->fontSize);
 	node->width = 2 * node->padding + varNameWidth + 2 * 5;
@@ -95,7 +81,6 @@ void ResizeReadNode(ReadNode* node) {
 	node->outPin.x = node->x + node->width / 2.0f;
 }
 void GetInputReadNode(ReadNode* node) {
-	//std::cout << node->myVarName << " " << node->expression << "\n";
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 		node->myVarName->focused = IsSingleLineTextClicked(node->myVarName);
 	}

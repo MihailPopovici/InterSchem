@@ -3,9 +3,8 @@
 #include "raylib.h"
 #include "string"
 
-DecisionNode* NewDecisionNode(int padding, int fontSize, float x, float y) {
+DecisionNode* NewDecisionNode(int padding, int fontSize, int x, int y) {
 	DecisionNode* p = new DecisionNode;
-	p->id = -1;
 	p->fontSize = 0;
 	p->padding = 0;
 
@@ -20,28 +19,25 @@ DecisionNode* NewDecisionNode(int padding, int fontSize, float x, float y) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = 0;
 	p->inPin.type = input;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
-	p->inPin.owner = p;
+	p->inPin.ownerPtr = p;
 	p->inPin.ownerType = decision;
 
-	p->outPinTrue.id = 0;
 	p->outPinTrue.type = output;
 	p->outPinTrue.x = 0.0f;
 	p->outPinTrue.y = 0.0f;
 	p->outPinTrue.radius = PIN_RADIUS;
-	p->outPinTrue.owner = p;
+	p->outPinTrue.ownerPtr = p;
 	p->outPinTrue.ownerType = decision;
 
-	p->outPinFalse.id = 0;
 	p->outPinFalse.type = output;
 	p->outPinFalse.x = 0.0f;
 	p->outPinFalse.y = 0.0f;
 	p->outPinFalse.radius = PIN_RADIUS;
-	p->outPinFalse.owner = p;
+	p->outPinFalse.ownerPtr = p;
 	p->outPinFalse.ownerType = decision;
 
 	p->toPinTrue = nullptr;
@@ -68,7 +64,7 @@ void SetDecisionNodeSize(DecisionNode* node, int padding, int fontSize) {
 	node->outPinFalse.y = node->y + node->height / 2.0f;
 	SetSingleLineTextPosition(node->expression, node->x + node->padding, node->y + node->padding);
 }
-void SetDecisionNodePosition(DecisionNode* node, float x, float y) {
+void SetDecisionNodePosition(DecisionNode* node, int x, int y) {
 	node->x = x;
 	node->y = y;
 

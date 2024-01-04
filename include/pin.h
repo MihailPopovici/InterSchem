@@ -12,12 +12,11 @@ enum PinType {
 };
 
 struct Pin {
-	int id; // TODO: int or unsigned?
+	int x, y;
+	int radius;
 	PinType type;
-	float x, y;
-	float radius;
-
-	void* owner;
+	//AnyNodeType owner;
+	void* ownerPtr;
 	NodeType ownerType;
 };
 

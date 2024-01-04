@@ -5,24 +5,20 @@
 #include "evalExpression.h";
 
 struct DecisionNode {
-	int id, index;
+	int x, y, width, height;
 	int fontSize, padding;
-	float x, y, width, height;
-
-	SingleLineText* expression;
-
 	Pin inPin;
 	Pin outPinTrue;
 	Pin outPinFalse;
 	Pin* toPinTrue;
 	Pin* toPinFalse;
 
-	// TODO: func
+	SingleLineText* expression;
 };
 
-DecisionNode* NewDecisionNode(int padding, int fontSize, float x, float y);
+DecisionNode* NewDecisionNode(int padding, int fontSize, int x, int y);
 void SetDecisionNodeSize(DecisionNode* node, int padding, int fontSize);
-void SetDecisionNodePosition(DecisionNode* node, float x, float y);
+void SetDecisionNodePosition(DecisionNode* node, int x, int y);
 void DrawDecisionNode(DecisionNode* node);
 int EvaluateDecisionNode(DecisionNode* node, Dictionary* dict);
 void ResizeDecisionNode(DecisionNode* node);

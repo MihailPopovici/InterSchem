@@ -6,9 +6,8 @@
 
 #include <iostream>
 
-AssignNode* NewAssignNode(int padding, int fontSize, float x, float y) {
+AssignNode* NewAssignNode(int padding, int fontSize, int x, int y) {
 	AssignNode* p = new AssignNode;
-	p->id = -1;
 	p->fontSize = 0;
 	p->padding = 0;
 
@@ -29,20 +28,18 @@ AssignNode* NewAssignNode(int padding, int fontSize, float x, float y) {
 	p->width = 0.0f;
 	p->height = 0.0f;
 
-	p->inPin.id = 0;
 	p->inPin.type = input;
 	p->inPin.x = 0.0f;
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
-	p->inPin.owner = p;
+	p->inPin.ownerPtr = p;
 	p->inPin.ownerType = assign;
 
-	p->outPin.id = 0;
 	p->outPin.type = output;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
-	p->outPin.owner = p;
+	p->outPin.ownerPtr = p;
 	p->outPin.ownerType = assign;
 
 	p->toPin = nullptr;
@@ -90,24 +87,6 @@ void DrawAssignNode(AssignNode* node) {
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 	DrawLink(node->outPin, node->toPin);
-
-	// +----+
-	// |    |
-	// +----+
-
-	// +------------------+
-	// | a = sin(6) + 5*x |
-	// +------------------+
-
-	// +-------+
-	// | a = 2 |
-	// +-------+
-}
-void LinkAssignNodeVar(AssignNode* node, std::string* name, int* val) {
-	
-}
-void SetAssignNodeExpression(AssignNode* node, std::string expression) {
-	
 }
 void EvaluateAssignNode(AssignNode* node, Dictionary* dict) {
 	int err = 0;

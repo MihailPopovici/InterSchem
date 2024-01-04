@@ -5,11 +5,10 @@
 
 struct SingleLineText {
 	int x, y, width, height;
-	int fontSize;
+	int fontSize, padding;
 	Color bgColor, fontColor;
-	int padding;
-	std::string str;
 	bool focused;
+	std::string str;
 };
 
 SingleLineText* NewSingleLineText();
