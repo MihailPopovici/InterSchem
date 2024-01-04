@@ -30,14 +30,11 @@ void SetSingleLineTextString(SingleLineText* stext, std::string str) {
 }
 bool IsSingleLineTextHovered(SingleLineText* stext) {
 	int mx = GetMouseX(), my = GetMouseY();
-	return mx >= stext->x && mx <= stext->x + stext->width && my >= stext->y && my <= stext->y + stext->height;
+	return stext->visible && mx >= stext->x && mx <= stext->x + stext->width && my >= stext->y && my <= stext->y + stext->height;
 }
 bool IsSingleLineTextClicked(SingleLineText* stext) {
 	return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && IsSingleLineTextHovered(stext);
 	//stext->focused = true; // TODO:
-}
-bool IsSingleLineTextFocused(SingleLineText* stext) { //TODO: unnecessary?
-	return stext->focused;
 }
 void ResizeSingleLineText(SingleLineText* stext) {
 	stext->width = MeasureText(stext->str.c_str(), stext->fontSize) + 2 * stext->padding;
@@ -58,6 +55,9 @@ void ClearStrSingleLineText(SingleLineText* stext) {
 	ResizeSingleLineText(stext);
 }
 void DrawSingleLineText(SingleLineText* stext) {
+	if (!stext->visible) {
+		return;
+	}
 	DrawRectangle(stext->x, stext->y, stext->width, stext->height, stext->bgColor);
 	DrawText(stext->str.c_str(), stext->x + stext->padding, stext->y + stext->padding, stext->fontSize, stext->fontColor);
 }

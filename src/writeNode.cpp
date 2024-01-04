@@ -14,6 +14,7 @@ WriteNode* NewWriteNode(int padding, int fontSize, int x, int y) {
 	SetSingleLineTextPadding(p->expression, 5);
 	SetSingleLineTextFontSize(p->expression, 20);
 	SetSingleLineTextPosition(p->expression, 0, 0);
+	p->expression->visible = true;
 
 	p->x = 0.0f;
 	p->y = 0.0f;

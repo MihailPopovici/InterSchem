@@ -89,13 +89,7 @@ void DrawDictionaryRow(DictionaryRow* drow) {
 }
 
 Dictionary* NewDictionary() {
-	Dictionary* p = new Dictionary;
-	p->x = 0;
-	p->y = 0;
-	p->width = 0;
-	p->height = 0;
-	p->padding = 0;
-	p->spacing = 0;
+	Dictionary* p = new Dictionary{};
 	return p;
 }
 void SetDictionaryPosition(Dictionary* dict, int x, int y) {
@@ -204,7 +198,7 @@ int GetValueFromDictionary(Dictionary* dict, std::string key){
 }
 bool IsDictionaryHovered(Dictionary* dict) {
 	int mx = GetMouseX(), my = GetMouseY();
-	return mx >= dict->x && mx <= dict->x + dict->width && my >= dict->y && my <= dict->y + dict->height;
+	return dict->visible && mx >= dict->x && mx <= dict->x + dict->width && my >= dict->y && my <= dict->y + dict->height;
 }
 bool IsDictionaryClicked(Dictionary* dict) {
 	return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && IsDictionaryHovered(dict);
@@ -218,6 +212,9 @@ bool IsDictionaryRowClicked(Dictionary* dict) {
 	return false;
 }
 DictionaryRow* GetClickedDictionaryRow(Dictionary* dict) {
+	if (!dict->visible) {
+		return nullptr;
+	}
 	for (DictionaryRow* r : dict->rows) {
 		if (IsDictionaryRowClicked(r)) {
 			return r;
@@ -270,6 +267,9 @@ void SetDictionarySpacing(Dictionary* dict, int spacing) {
 	dict->height = height;
 	dict->spacing = spacing;
 }
+void SetDictionaryColor(Dictionary* dict, Color bgColor) {
+	dict->bgColor = bgColor;
+}
 void ReorderDictionary(Dictionary* dict, int index) {
 	size_t n = dict->rows.size();
 	while (index - 1 >= 0 && dict->rows[index]->key.compare(dict->rows[index - 1]->key) < 0) {
@@ -296,7 +296,10 @@ void ResizeDictionary(Dictionary* dict) {
 	ResizeWindow(dict->window);
 }
 void DrawDictionary(Dictionary* dict) {
-	DrawRectangle(dict->x, dict->y, dict->width, dict->height, RAYWHITE); // TODO:
+	if (!dict->visible) {
+		return;
+	}
+	DrawRectangle(dict->x, dict->y, dict->width, dict->height, dict->bgColor);
 	for (DictionaryRow* r : dict->rows) {
 		DrawDictionaryRow(r);
 	}

@@ -6,8 +6,8 @@
 struct SingleLineText {
 	int x, y, width, height;
 	int fontSize, padding;
+	bool visible, focused;
 	Color bgColor, fontColor;
-	bool focused;
 	std::string str;
 };
 
@@ -19,7 +19,6 @@ void SetSingleLineTextPadding(SingleLineText* stext, int padding);
 void SetSingleLineTextString(SingleLineText* stext, std::string str);
 bool IsSingleLineTextHovered(SingleLineText* stext);
 bool IsSingleLineTextClicked(SingleLineText* stext);
-bool IsSingleLineTextFocused(SingleLineText* stext);
 void ResizeSingleLineText(SingleLineText* stext);
 void InsertCharSingleLineText(SingleLineText* stext, char c);
 void EraseCharSingleLineText(SingleLineText* stext);

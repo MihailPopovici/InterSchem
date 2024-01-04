@@ -8,7 +8,7 @@ void MultiLineTextMergeLines(MultiLineText* mtext, size_t destination, size_t so
 	mtext->text.erase(mtext->text.begin() + source);
 }
 void MultiLineTextToPreviousLine(MultiLineText* mtext) {
-	if (mtext->lin > 0 && mtext->lin > mtext->limLin) {
+	if (mtext->lin > 0) {
 		mtext->lin--;
 		if (mtext->lin < mtext->firstLin) {
 			mtext->firstLin = mtext->lin;
@@ -36,13 +36,13 @@ void MultiLineTextToNextLine(MultiLineText* mtext) {
 	}
 }
 void MultiLineTextToPreviousColumn(MultiLineText* mtext) {
-	if (mtext->col > 0 && ((mtext->lin == mtext->limLin && mtext->col > mtext->limCol) || mtext->lin > mtext->limLin)) {
+	if (mtext->col > 0) {
 		mtext->col--;
 		if (mtext->col < mtext->firstCol) {
 			mtext->firstCol = mtext->col;
 		}
 	}
-	else if (mtext->lin > 0 && (mtext->lin > mtext->limLin)) {
+	else if (mtext->lin > 0) {
 		mtext->lin--;
 		if (mtext->lin < mtext->firstLin) {
 			mtext->firstLin = mtext->lin;
@@ -70,6 +70,9 @@ void MultiLineTextToNextColumn(MultiLineText* mtext) {
 	}
 }
 void MultiLineTextEnter(MultiLineText* mtext) {
+	if (mtext->lin < mtext->limLin || (mtext->lin == mtext->limLin && mtext->col < mtext->limCol)) {
+		return;
+	}
 	mtext->lin++;
 	if (mtext->lin >= mtext->firstLin + mtext->visLin) {
 		mtext->firstLin++;
@@ -80,14 +83,17 @@ void MultiLineTextEnter(MultiLineText* mtext) {
 	mtext->firstCol = 0;
 }
 void MultiLineTextBackspace(MultiLineText* mtext) {
-	if (mtext->col > 0 && ((mtext->lin == mtext->limLin && mtext->col > mtext->limCol) || mtext->lin > mtext->limLin)) {
+	if (mtext->lin < mtext->limLin || (mtext->lin == mtext->limLin && mtext->col <= mtext->limCol)) {
+		return;
+	}
+	if (mtext->col > 0) {
 		mtext->col--;
 		mtext->text[mtext->lin].erase(mtext->col, 1);
 		if (mtext->col < mtext->firstCol) {
 			mtext->firstCol--;
 		}
 	}
-	else if (mtext->lin > 0 && (mtext->lin > mtext->limLin)) {
+	else if (mtext->lin > 0) {
 		mtext->lin--;
 		if (mtext->lin < mtext->firstLin) {
 			mtext->firstLin = mtext->lin;
@@ -131,7 +137,7 @@ void MultiLineTextCopy(MultiLineText* mtext) {
 		SetClipboardText(res.c_str());
 	}
 }
-MultiLineText* NewMultiLineText(int startX, int startY, size_t visibleLines, size_t visibleColumns, Font font, float fontSize, float padding, Color textColor, Color bgColor) {
+MultiLineText* NewMultiLineText(int startX, int startY, size_t visibleLines, size_t visibleColumns, Font font, int fontSize, int padding, Color textColor, Color bgColor) {
 	MultiLineText* mtext = new MultiLineText;
 	mtext->visLin = visibleLines;
 	mtext->visCol = visibleColumns;
@@ -153,6 +159,7 @@ MultiLineText* NewMultiLineText(int startX, int startY, size_t visibleLines, siz
 	mtext->y = startY;
 	mtext->width = visibleColumns * mtext->chWidth + 2.0f * padding;
 	mtext->height = visibleLines * fontSize + 2.0f * padding;
+	mtext->visible = false;
 
 	return mtext;
 }
@@ -160,6 +167,9 @@ void CleanupMultiLineText(MultiLineText* mtext) {
 
 }
 void MultiLineTextDraw(MultiLineText* mtext) {
+	if (!mtext->visible) {
+		return;
+	}
 	DrawRectangle(mtext->x, mtext->y, mtext->width, mtext->height, mtext->bgColor);
 
 	for (size_t i = mtext->firstLin, posLin = 0; i < mtext->text.size() && i < mtext->firstLin + mtext->visLin; i++, posLin++) {
@@ -169,7 +179,7 @@ void MultiLineTextDraw(MultiLineText* mtext) {
 		size_t n = (mtext->firstCol + mtext->visCol) > mtext->text[i].size() ? mtext->text[i].size() - mtext->firstCol + 1 : mtext->visCol;
 		std::string cropped = mtext->text[i].substr(mtext->firstCol, n);
 
-		DrawTextEx(mtext->font, cropped.c_str(), { mtext->x + mtext->padding, mtext->y + posLin * mtext->fontSize + mtext->padding }, mtext->fontSize, 2, mtext->textColor);
+		DrawTextEx(mtext->font, cropped.c_str(), { (float)mtext->x + mtext->padding, (float)mtext->y + posLin * mtext->fontSize + mtext->padding }, mtext->fontSize, 2, mtext->textColor);
 	}
 
 	/*std::string cursor;
@@ -184,20 +194,32 @@ void MultiLineTextDraw(MultiLineText* mtext) {
 
 	if (mtext->focused) {
 		// TODO: figure out how to calculate mtext->text width based on a given font
-		DrawLineV({ mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, mtext->y + mtext->padding + (mtext->lin - mtext->firstLin) * mtext->fontSize }, { mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, mtext->y + mtext->padding + (mtext->lin - mtext->firstLin + 1) * mtext->fontSize }, mtext->textColor);
+		DrawLineV({ mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->lin - mtext->firstLin) * mtext->fontSize }, { mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->lin - mtext->firstLin + 1) * mtext->fontSize }, mtext->textColor);
 	}
 }
 std::vector<std::string> MultiLineTextParseText(MultiLineText* mtext, std::string strToParse) {
 	size_t n = strToParse.size();
-	std::vector<std::string> temp;
-	size_t prev = 0;
+	std::vector<std::string> temp(1);
+	for (size_t i = 0; i < n; i++) {
+		if (strToParse[i] == '\r') {
+			strToParse.erase(i, 1);
+		}
+	}
+	size_t prev = 0, num = 0;
 	for (size_t i = 0; i < n; i++) {
 		if (strToParse[i] == '\n') {
-			temp.push_back(strToParse.substr(prev, i - prev - 1));
+			temp[num] = strToParse.substr(prev, i - prev);
+			temp.push_back("");
+			num++;
 			prev = i + 1;
 		}
 	}
-	temp.push_back(strToParse.substr(prev, strToParse[n - 1] == '\n' ? n - prev - 2 : n - prev)); // TODO: might break
+	if (temp[0].empty()) {
+		temp[0] += strToParse;
+	}
+	else if (strToParse[n - 1] != '\n') {
+		temp.push_back(strToParse.substr(prev, n - prev)); // TODO: might break
+	}
 
 	for (std::string& str : temp) {
 		size_t s = str.size();
@@ -222,12 +244,21 @@ void MultiLineTextPushLine(MultiLineText* mtext, std::string line) {
 	mtext->text.push_back(line);
 }
 void MultiLineTextPushString(MultiLineText* mtext, std::string str) {
-	mtext->text[mtext->limLin] += str;
+	auto lines = MultiLineTextParseText(mtext, str);
+	size_t n = lines.size();
+	mtext->text[mtext->limLin] += lines[0];
+	for (size_t i = 1; i < n; i++) {
+		mtext->text.push_back(lines[i]);
+	}
 }
 void MultiLineTextOverrideLine(MultiLineText* mtext, size_t pos, std::string line) {
 	mtext->text[pos] = line;
 }
 void MultiLineTextEdit(MultiLineText* mtext) {
+	if (!mtext->visible) {
+		return;
+	}
+
 	auto mpos = GetMousePosition();
 	bool inBounds = (mpos.x >= mtext->x && mpos.x < mtext->x + mtext->width) && (mpos.y >= mtext->y && mpos.y < mtext->y + mtext->height);
 	// TODO: maybe create a static member to avoid conflict
@@ -251,11 +282,13 @@ void MultiLineTextEdit(MultiLineText* mtext) {
 
 	int chr = GetCharPressed();
 	if (chr != 0) {
-		mtext->text[mtext->lin].insert(mtext->col, 1, chr);
-		if (mtext->text[mtext->lin].size() >= mtext->visCol) {
-			mtext->firstCol++;
+		if (mtext->lin >= mtext->limLin && (mtext->lin != mtext->limLin || mtext->col >= mtext->limCol)) {
+			mtext->text[mtext->lin].insert(mtext->col, 1, chr);
+			if (mtext->text[mtext->lin].size() >= mtext->visCol) {
+				mtext->firstCol++;
+			}
+			mtext->col++;
 		}
-		mtext->col++;
 	}
 
 	int key = GetKeyPressed();
@@ -299,7 +332,7 @@ void MultiLineTextSetPosition(MultiLineText* mtext, int x, int y) {
 }
 bool MultiLineTextIsHovered(MultiLineText* mtext) {
 	int mx = GetMouseX(), my = GetMouseY();
-	return mx >= mtext->x && mx <= mtext->x + mtext->width && my >= mtext->y && my <= mtext->y + mtext->height;
+	return mtext->visible && mx >= mtext->x && mx <= mtext->x + mtext->width && my >= mtext->y && my <= mtext->y + mtext->height;
 }
 bool MultiLineTextIsClicked(MultiLineText* mtext) {
 	return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && MultiLineTextIsHovered(mtext);
@@ -316,14 +349,26 @@ void MultiLineTextSetLimit(MultiLineText* mtext, size_t limLin, size_t limCol) {
 	mtext->limCol = limCol;
 	if (mtext->lin < mtext->limLin) {
 		mtext->lin = mtext->limLin;
+		if (mtext->lin >= mtext->firstLin + mtext->visLin) {
+			mtext->firstLin = mtext->lin - mtext->visLin + 1;
+		}
 	}
 	if (mtext->lin == mtext->limLin && mtext->col < mtext->limCol) {
 		mtext->col = limCol;
+		if (mtext->col >= mtext->firstCol + mtext->visCol) {
+			mtext->firstCol = mtext->col - mtext->visCol + 1;
+		}
 	}
 }
 void MultiLineTextSetLimitMax(MultiLineText* mtext) {
 	mtext->lin = mtext->limLin = mtext->text.size() - 1;
+	if (mtext->lin >= mtext->firstLin + mtext->visLin) {
+		mtext->firstLin = mtext->lin - mtext->visLin + 1;
+	}
 	mtext->col = mtext->limCol = mtext->text[mtext->limLin].size();
+	if (mtext->col >= mtext->firstCol + mtext->visCol) {
+		mtext->firstCol = mtext->col - mtext->visCol + 1;
+	}
 }
 int MultiLineTextGetNextInt(MultiLineText* mtext) {
 	std::string str = "";

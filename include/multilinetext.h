@@ -7,8 +7,11 @@
 struct Window;
 
 struct MultiLineText {
+	int x, y, width, height;
+	int fontSize, padding;
+	bool visible, focused;
+	float chWidth;
 	Font font; // TODO: should be able to use more than one font
-	float fontSize, chWidth;
 
 	std::vector<std::string> text;
 	size_t lin, col;
@@ -16,10 +19,7 @@ struct MultiLineText {
 	size_t firstLin, firstCol;
 	size_t limLin, limCol;
 
-	bool focused;
 
-	int x, y, width, height;
-	float padding;
 	Color textColor, bgColor;
 
 	Window* window;
@@ -34,7 +34,7 @@ void MultiLineTextEnter(MultiLineText* mtext);
 void MultiLineTextBackspace(MultiLineText* mtext);
 void MultiLineTextPaste(MultiLineText* mtext);
 void MultiLineTextCopy(MultiLineText* mtext);
-MultiLineText* NewMultiLineText(int startX, int startY, size_t visibleLines, size_t visibleColumns, Font font, float fontSize, float padding, Color textColor, Color bgColor);
+MultiLineText* NewMultiLineText(int startX, int startY, size_t visibleLines, size_t visibleColumns, Font font, int fontSize, int padding, Color textColor, Color bgColor);
 void CleanupMultiLineText(MultiLineText* mtext);
 void MultiLineTextDraw(MultiLineText* mtext);
 std::vector<std::string> MultiLineTextParseText(MultiLineText* mtext, std::string strToParse);

@@ -16,12 +16,14 @@ AssignNode* NewAssignNode(int padding, int fontSize, int x, int y) {
 	SetSingleLineTextPadding(p->myVarName, 5);
 	SetSingleLineTextFontSize(p->myVarName, 20);
 	SetSingleLineTextPosition(p->myVarName, 0, 0);
+	p->myVarName->visible = true;
 
 	p->expression = NewSingleLineText();
 	SetSingleLineTextColors(p->expression, { 100, 100, 100, 70 }, WHITE);
 	SetSingleLineTextPadding(p->expression, 5);
 	SetSingleLineTextFontSize(p->expression, 20);
 	SetSingleLineTextPosition(p->expression, 0, 0);
+	p->expression->visible = true;
 
 	p->x = 0.0f;
 	p->y = 0.0f;

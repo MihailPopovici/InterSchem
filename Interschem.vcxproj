@@ -144,6 +144,7 @@
     <ClCompile Include="src\dictionary.cpp" />
     <ClCompile Include="src\evalExpression.cpp" />
     <ClCompile Include="src\execFunc.cpp" />
+    <ClCompile Include="src\fileFunc.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\multilinetext.cpp" />
     <ClCompile Include="src\nodeComponents.cpp" />

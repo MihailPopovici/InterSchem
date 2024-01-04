@@ -14,6 +14,7 @@ ReadNode* NewReadNode(int padding, int fontSize, int x, int y) {
 	SetSingleLineTextPadding(p->myVarName, 5);
 	SetSingleLineTextFontSize(p->myVarName, 20);
 	SetSingleLineTextPosition(p->myVarName, 0, 0);
+	p->myVarName->visible = true;
 
 	p->x = 0.0f;
 	p->y = 0.0f;

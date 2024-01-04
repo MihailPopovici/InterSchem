@@ -5,19 +5,23 @@
 #include "multilinetext.h"
 
 Window* NewWindow() {
-	Window* p = new Window;
-	p->x = 0;
-	p->y = 0;
-	p->width = 0;
-	p->height = 0;
-	p->padding = 0.0f;
-	p->spacing = 0.0f;
-	p->bgColor = WHITE;
-	p->focused = false;
-	p->dx = 0;
-	p->dy = 0;
-	p->dragging = false;
+	Window* p = new Window{};
+	p->visible = true;
+	p->close = NewButton();
+	SetButtonColors(p->close, { 255, 0, 0, 125 } , BLANK);
+	SetButtonLabel(p->close, "", 0, 8);
+	SetButtonPosition(p->close, p->x + p->width - p->close->width, p->y);
 	return p;
+}
+void SetWindowTitle(Window* win, std::string title, int fontSize, Color fontColor) {
+	win->title = title;
+	win->fontSize = fontSize;
+	win->fontColor = fontColor;
+	if (MeasureText(title.c_str(), fontSize) + 2 * win->padding > win->width) {
+		win->width = MeasureText(title.c_str(), fontSize) + 2 * win->padding;
+	}
+	win->height = win->close->height + fontSize + win->padding + win->spacing;
+	// TODO: resize and etc
 }
 void SetWindowColor(Window* win, Color bgColor) {
 	win->bgColor = bgColor;
@@ -38,13 +42,17 @@ void SetWindowPosition(Window* win, int x, int y) {
 			MultiLineTextSetPosition(m, m->x + dx, m->y + dy);
 		}
 	}
+	SetButtonPosition(win->close, win->close->x + dx, win->close->y + dy);
 	win->x = x;
 	win->y = y;
 }
-void SetWindowPadding(Window* win, float padding) {
+void SetWindowPadding(Window* win, int padding) {
 	win->width -= 2 * win->padding;
 	win->width += 2 * padding;
-	float height = padding;
+	int height = padding;
+	if (!win->title.empty()) {
+		height += win->fontSize + win->spacing;
+	}
 	for (WindowElement& e : win->elements) {
 		if (e.type == WindowElementTypeButton) {
 			Button* b = (Button*)e.ptr;
@@ -68,9 +76,13 @@ void SetWindowPadding(Window* win, float padding) {
 	height += padding;
 	win->height = height;
 	win->padding = padding;
+	SetButtonPosition(win->close, win->x + win->width - win->close->width, win->y);
 }
-void SetWindowSpacing(Window* win, float spacing) {
-	float height = win->padding;
+void SetWindowSpacing(Window* win, int spacing) {
+	int height = win->padding;
+	if (!win->title.empty()) {
+		height += win->fontSize + spacing;
+	}
 	for (WindowElement& e : win->elements) {
 		if (e.type == WindowElementTypeButton) {
 			Button* b = (Button*)e.ptr;
@@ -102,7 +114,7 @@ void AddElementToWindow(Window* win, WindowElement el) {
 			SetButtonPosition(b, win->x + win->padding, win->y + win->height - win->padding + win->spacing);
 		}
 		else {
-			SetButtonPosition(b, win->x + win->padding, win->y + win->height - win->padding);
+			SetButtonPosition(b, win->x + win->padding, win->y + win->height - win->padding) ;
 		}
 		if (b->width + 2 * win->padding > win->width) {
 			win->width = b->width + 2 * win->padding;
@@ -147,9 +159,16 @@ void AddElementToWindow(Window* win, WindowElement el) {
 		win->height += m->height;
 	}
 	win->elements.push_back(el); //TODO: validate
+	SetButtonPosition(win->close, win->x + win->width - win->close->width, win->y);
 }
 void DrawWindow(Window* win) {
+	if (!win->visible) {
+		return;
+	}
 	DrawRectangle(win->x, win->y, win->width, win->height, win->bgColor);
+	int titleWidth = MeasureText(win->title.c_str(), win->fontSize);
+	DrawButton(win->close);
+	DrawText(win->title.c_str(), win->x + win->padding + (win->width - 2 * win->padding - titleWidth) / 2, win->y + win->padding + win->close->height, win->fontSize, win->fontColor);
 	for (WindowElement& e : win->elements) {
 		if (e.type == WindowElementTypeButton) {
 			DrawButton((Button*)e.ptr);
@@ -162,17 +181,17 @@ void DrawWindow(Window* win) {
 		}
 	}
 }
-bool IsWindowFocused(Window* win) {
-	return win->focused;
-}
 bool IsWindowHovered(Window* win) {
 	int mx = GetMouseX(), my = GetMouseY();
-	return mx >= win->x && mx <= win->x + win->width && my >= win->y && my <= win->y + win->height;
+	return win->visible && mx >= win->x && mx <= win->x + win->width && my >= win->y && my <= win->y + win->height;
 }
 bool IsWindowClicked(Window* win) {
 	return IsMouseButtonPressed(MOUSE_BUTTON_LEFT) && IsWindowHovered(win);
 }
 bool IsWindowElementClicked(Window* win) {
+	if (!win->visible) {
+		return false;
+	}
 	for (WindowElement& e : win->elements) {
 		if (e.type == WindowElementTypeButton) {
 			if (IsButtonClicked((Button*)e.ptr)) {
@@ -193,8 +212,11 @@ bool IsWindowElementClicked(Window* win) {
 	return false;
 }
 void ResizeWindow(Window* win) {
-	int height = win->padding;
-	int maxWidth = 0;
+	int height = win->padding + win->close->height;
+	if (!win->title.empty()) {
+		height += win->fontSize + win->spacing;
+	}
+	int maxWidth = MeasureText(win->title.c_str(), win->fontSize);
 	for (WindowElement& el : win->elements) {
 		if (el.type == WindowElementTypeButton) {
 			Button* b = (Button*)el.ptr;
@@ -226,8 +248,12 @@ void ResizeWindow(Window* win) {
 	height -= win->spacing;
 	win->height = height;
 	win->width = maxWidth + 2 * win->padding;
+	SetButtonPosition(win->close, win->x + win->width - win->close->width, win->y);
 }
-void DragWindow(Window* win) {
+void UpdateWindow(Window* win) {
+	if (!win->visible) {
+		return;
+	}
 	int mx = GetMouseX(), my = GetMouseY();
 	if (IsWindowClicked(win) && !IsWindowElementClicked(win)) {
 		win->dx = mx - win->x;
@@ -239,5 +265,25 @@ void DragWindow(Window* win) {
 	}
 	else if (win->dragging && IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
 		win->dragging = false;
+	}
+	if (IsButtonClicked(win->close)) {
+		win->dragging = false;
+		win->dx = win->dy = 0;
+		WindowSetVisible(win, false);
+	}
+}
+bool WindowShouldClose(Window* win) {
+	return !win->visible;
+}
+void WindowSetVisible(Window* win, bool visible) {
+	win->visible = visible;
+	win->close->visible = visible;
+	for (auto& e : win->elements) {
+		int* i = (int*)e.ptr;
+		i += 6;
+		bool* b = (bool*)i;
+		*b = visible;
+		//*((bool*)((int*)e.ptr) + 6) = visible;
+		int x = 0;
 	}
 }
