@@ -456,7 +456,7 @@ struct node {
 };
 
 node* f(node* a, node* b) {
-	while (a!=b) {
+	while (a != b) {
 		for (node* p : b->sons) {
 			if (a->parent == p) return p ;
 		}
@@ -465,13 +465,50 @@ node* f(node* a, node* b) {
 	return nullptr;
 }
 
+bool parcurgere(node* root) {
+	using namespace std;
+	queue<node*> q2;
+	set<node*> viz2;
+	q2.push(root);
+	while (!q2.empty()) {
+		node* current = q2.front();
+		q2.pop();
+		viz2.insert(current);
+		size_t i = 0;
+		for (auto& son : current->sons) {
+			auto it = viz2.find(son);
+			if (it == viz2.end()) {
+				q2.push(son);
+			}
+			else {
+				if (son == son->parent->sons[0]) {
+					son->parent->parent->sons.insert(son->parent->parent->sons.end(), son->parent->sons[1]->sons.begin(), son->parent->sons[1]->sons.end());
+					delete son->parent->sons[1];
+					son->parent->sons.erase(son->parent->sons.begin() + 1);
+				}
+				else {
+					son->parent->parent->sons.insert(son->parent->parent->sons.end(), son->parent->sons[0]->sons.begin(), son->parent->sons[0]->sons.end());
+					delete son->parent->sons[0];
+					son->parent->sons.erase(son->parent->sons.begin());
+				}
+				current->sons.erase(current->sons.begin() + i);
+
+				return true; // am gasit ciclu
+			}
+			i++;
+		}
+	}
+	return false; // nu mai sunt cicluri
+}
+
 void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
-	std::queue<std::pair<node*, AnyNodeType>> q;
-	std::set<void*> viz;
-	std::unordered_map<void*, int> dNodeLine;
-	std::unordered_map<void*, node*> scopes;
+	using namespace std;
+	queue<pair<node*, AnyNodeType>> q;
+	set<void*> viz;
+	unordered_map<void*, int> dNodeLine;
+	unordered_map<void*, node*> scopes;
 	node* root = new node{ nullptr,{startNode, start} };
-	//node* currentNode = root;
+	node* rootCopy = root;
 	q.push({ root, { startNode, start } });
 	while (!q.empty()) {
 		auto [prev, current] = q.front();
@@ -483,61 +520,83 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 		}
 		else if (current.type == write) {
 			WriteNode* p = ((WriteNode*)current.address);
-			prev->sons.push_back(new node{ prev, { p, write } });
-			auto it = viz.find(p->toPin->ownerPtr);
-			if (it == viz.end()) {
-				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
-			}
-			else {
-				node* p = f(prev, scopes[*it]);
-			}
-		}
-		else if (current.type == read) {
-			ReadNode* p = ((ReadNode*)current.address);
-			prev->sons.push_back(new node{prev, { p, read} });
-			auto it = viz.find(p->toPin->ownerPtr);
-			if (it == viz.end()) {
-				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
-			}
-			else {
-				node* p = f(prev, scopes[*it]);
-			}
-		}
-		else if (current.type == assign) {
-			AssignNode* p = ((AssignNode*)current.address);
-			prev->sons.push_back(new node{prev, { p, assign } });
+			node* n = new node{ prev, { p, write } };
+			prev->sons.push_back(n);
 
 			auto it = viz.find(p->toPin->ownerPtr);
 			if (it == viz.end()) {
 				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
 			}
 			else {
-				node* p = f(prev, scopes[*it]);
+				node* first = *(prev->sons.end() - 1);
+				node* second = scopes[*it];
+				node* x = f(first, second);
+				n->sons.push_back(x);
+			}
+		}
+		else if (current.type == read) {
+			ReadNode* p = ((ReadNode*)current.address);
+			node* n = new node{ prev, { p, read } };
+			prev->sons.push_back(n);
+
+			auto it = viz.find(p->toPin->ownerPtr);
+			if (it == viz.end()) {
+				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
+			}
+			else {
+				node* first = *(prev->sons.end() - 1);
+				node* second = scopes[*it];
+				node* x = f(first, second);
+				n->sons.push_back(x);
+			}
+		}
+		else if (current.type == assign) {
+			AssignNode* p = ((AssignNode*)current.address);
+			node* n = new node{ prev, { p, assign } };
+			prev->sons.push_back(n);
+
+			auto it = viz.find(p->toPin->ownerPtr);
+			if (it == viz.end()) {
+				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
+			}
+			else {
+				node* first = *(prev->sons.end() - 1);
+				node* second = scopes[*it];
+				node* x = f(first, second);
+				n->sons.push_back(x);
 			}
 		}
 		else if (current.type == decision) {
 			DecisionNode* p = ((DecisionNode*)current.address);
-			node* n = new node{prev, {p,decision} };
+			node* n = new node{ prev, {p,decision} };
 			prev->sons.push_back(n);
 			scopes[current.address] = n;
-			node* n1 = new node{ prev, {p,decision} };
-			node* n2 = new node{ prev, {p,decision} };
+			node* n1 = new node{ n, {p,decision} };
+			node* n2 = new node{ n, {p,decision} };
 			n->sons.push_back(n1);
 			n->sons.push_back(n2);
 			auto it1 = viz.find(p->toPinTrue->ownerPtr);
 			if (it1 == viz.end()) {
-				q.push({ prev, { p->toPinTrue->ownerPtr, p->toPinTrue->ownerType } });
+				q.push({ n1, { p->toPinTrue->ownerPtr, p->toPinTrue->ownerType } });
 			}
 			else {
-				node* p = f(prev, scopes[*it1]);
+				node* first = *(prev->sons.end() - 1);
+				node* second = scopes[*it1];
+				node* x = f(first, second);
+				n->sons.push_back(x);
 			}
 			auto it2 = viz.find(p->toPinFalse->ownerPtr);
 			if (it2 == viz.end()) {
-				q.push({ prev, { p->toPinFalse->ownerPtr, p->toPinFalse->ownerType } });
+				q.push({ n2, { p->toPinFalse->ownerPtr, p->toPinFalse->ownerType } });
 			}
 			else {
-				node* p = f(prev, scopes[*it2]);
+				node* first = *(prev->sons.end() - 1);
+				node* second = scopes[*it2];
+				node* x = f(first, second);
+				n->sons.push_back(x);
 			}
 		}
 	}
+
+	while (parcurgere(rootCopy)) {}
 }
