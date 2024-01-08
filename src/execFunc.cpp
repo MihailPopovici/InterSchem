@@ -465,40 +465,45 @@ node* f(node* a, node* b) {
 	return nullptr;
 }
 
-bool parcurgere(node* root) {
+node* parcurgere(node* root) {
 	using namespace std;
-	queue<node*> q2;
-	set<node*> viz2;
-	q2.push(root);
-	while (!q2.empty()) {
-		node* current = q2.front();
-		q2.pop();
-		viz2.insert(current);
+	queue<node*> q;
+	set<node*> viz;
+	q.push(root);
+	while (!q.empty()) {
+		node* current = q.front();
+		q.pop();
+		viz.insert(current);
 		size_t i = 0;
 		for (auto& son : current->sons) {
-			auto it = viz2.find(son);
-			if (it == viz2.end()) {
-				q2.push(son);
+			auto it = viz.find(son);
+			if (it == viz.end()) {
+				q.push(son);
 			}
 			else {
-				if (son == son->parent->sons[0]) {
-					son->parent->parent->sons.insert(son->parent->parent->sons.end(), son->parent->sons[1]->sons.begin(), son->parent->sons[1]->sons.end());
-					delete son->parent->sons[1];
-					son->parent->sons.erase(son->parent->sons.begin() + 1);
+				node* ifScope = son->parent;
+				node* scopeThatHasTheIf = son->parent->parent;
+				node* trueBranch = son->parent->sons[0];
+				node* falseBranch = son->parent->sons[1];
+				ifScope->sons.clear();
+				if (son == trueBranch) {
+					scopeThatHasTheIf->sons.insert(scopeThatHasTheIf->sons.end(), falseBranch->sons.begin(), falseBranch->sons.end());
+					ifScope->sons = trueBranch->sons;
 				}
 				else {
-					son->parent->parent->sons.insert(son->parent->parent->sons.end(), son->parent->sons[0]->sons.begin(), son->parent->sons[0]->sons.end());
-					delete son->parent->sons[0];
-					son->parent->sons.erase(son->parent->sons.begin());
+					scopeThatHasTheIf->sons.insert(scopeThatHasTheIf->sons.end(), trueBranch->sons.begin(), trueBranch->sons.end());
+					ifScope->sons = falseBranch->sons;
 				}
+				delete trueBranch;
+				delete falseBranch;
 				current->sons.erase(current->sons.begin() + i);
 
-				return true; // am gasit ciclu
+				return ifScope;
 			}
 			i++;
 		}
 	}
-	return false; // nu mai sunt cicluri
+	return nullptr;
 }
 
 void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
@@ -598,5 +603,5 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 		}
 	}
 
-	while (parcurgere(rootCopy)) {}
+	while (parcurgere(rootCopy) != nullptr) {}
 }
