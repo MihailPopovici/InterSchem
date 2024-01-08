@@ -451,3 +451,96 @@ void UpdateVariablesTable(NodeArrays& nodes, Dictionary* dict) {
 	}
 	ResizeDictionary(dict);
 }
+
+struct node {
+	node* parent;
+	AnyNodeType info;
+	std::vector<node*> sons;
+};
+
+node* f(node* a, node* b) {
+	while (a!=b) {
+		for (node* p : b->sons) {
+			if (a->parent == p) return p ;
+		}
+		a = a->parent;
+	}
+	return nullptr;
+}
+
+void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
+	std::queue<std::pair<node*, AnyNodeType>> q;
+	std::set<void*> viz;
+	std::unordered_map<void*, int> dNodeLine;
+	std::unordered_map<void*, node*> scopes;
+	node* root = new node{ nullptr,{startNode, start} };
+	//node* currentNode = root;
+	q.push({ root, { startNode, start } });
+	while (!q.empty()) {
+		auto [prev, current] = q.front();
+		q.pop();
+		viz.insert(current.address);
+		if (current.type == start) {
+			StartNode* p = ((StartNode*)current.address);
+			q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
+		}
+		else if (current.type == write) {
+			WriteNode* p = ((WriteNode*)current.address);
+			prev->sons.push_back(new node{ prev, { p, write } });
+			auto it = viz.find(p->toPin->ownerPtr);
+			if (it == viz.end()) {
+				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
+			}
+			else {
+				node* p = f(prev, scopes[*it]);
+			}
+		}
+		else if (current.type == read) {
+			ReadNode* p = ((ReadNode*)current.address);
+			prev->sons.push_back(new node{prev, { p, read} });
+			auto it = viz.find(p->toPin->ownerPtr);
+			if (it == viz.end()) {
+				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
+			}
+			else {
+				node* p = f(prev, scopes[*it]);
+			}
+		}
+		else if (current.type == assign) {
+			AssignNode* p = ((AssignNode*)current.address);
+			prev->sons.push_back(new node{prev, { p, assign } });
+
+			auto it = viz.find(p->toPin->ownerPtr);
+			if (it == viz.end()) {
+				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
+			}
+			else {
+				node* p = f(prev, scopes[*it]);
+			}
+		}
+		else if (current.type == decision) {
+			DecisionNode* p = ((DecisionNode*)current.address);
+			node* n = new node{prev, {p,decision} };
+			prev->sons.push_back(n);
+			scopes[current.address] = n;
+			node* n1 = new node{ prev, {p,decision} };
+			node* n2 = new node{ prev, {p,decision} };
+			n->sons.push_back(n1);
+			n->sons.push_back(n2);
+			auto it1 = viz.find(p->toPinTrue->ownerPtr);
+			if (it1 == viz.end()) {
+				q.push({ prev, { p->toPinTrue->ownerPtr, p->toPinTrue->ownerType } });
+			}
+			else {
+				node* p = f(prev, scopes[*it1]);
+			}
+			auto it2 = viz.find(p->toPinFalse->ownerPtr);
+			if (it2 == viz.end()) {
+				q.push({ prev, { p->toPinFalse->ownerPtr, p->toPinFalse->ownerType } });
+			}
+			else {
+				node* p = f(prev, scopes[*it2]);
+			}
+		}
+	}
+}

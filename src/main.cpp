@@ -152,6 +152,22 @@ int main() {
 		AddDictionaryRow(schemeFiles, schRow);
 	}
 	ResizeDictionary(schemeFiles);
+
+	MultiLineText* code = NewMultiLineText(650, 500, 25, 32, font, 20.0f, 5.0f, WHITE, BLACK);
+	MultiLineTextOverrideLine(code, 0, "");
+	MultiLineTextSetLimitMax(code);
+	Window* codeWin = NewWindow();
+	SetWindowColor(codeWin, { 66, 66, 66, 255 });
+	SetWindowPosition(codeWin, 650, 50);
+	SetWindowSpacing(codeWin, 5.0f);
+	SetWindowPadding(codeWin, 5.0f);
+	SetWindowTitle(codeWin, "Translation", 32, RAYWHITE);
+	AddElementToWindow(codeWin, { code, WindowElementTypeMultiLineText });
+	Button* translate = NewButton();
+	SetButtonColors(translate, BLANK, WHITE);
+	SetButtonLabel(translate, "Translate", 20, 5);
+	AddElementToWindow(codeWin, { translate, WindowElementTypeButton });
+	WindowSetVisible(codeWin, true);
 	
 	bool popup = false;
 	string popupMsg;
@@ -222,6 +238,7 @@ int main() {
 		UpdateWindow(createNodesWin);
 		UpdateWindow(variablesWin);
 		UpdateWindow(schemesWin);
+		UpdateWindow(codeWin);
 		showConsoleWindow->visible = WindowShouldClose(consoleWin);
 		showCreateWindow->visible = WindowShouldClose(createNodesWin);
 		showVariablesWindow->visible = WindowShouldClose(variablesWin);
@@ -347,8 +364,14 @@ int main() {
 			WindowSetVisible(schemesWin, true);
 			showSchemesWindow->visible = false;
 		}
+		if (IsButtonClicked(translate)) {
+			MultiLineTextClear(code);
+			UpdateVariablesTable(nodes, variablesDictionary);
+			EncodeScheme(code, variablesDictionary, nodes.startNode);
+		}
 
 		MultiLineTextEdit(console);
+		MultiLineTextEdit(code);
 		if (state == notExecuting) {
 
 		}
@@ -396,6 +419,7 @@ int main() {
 		DrawWindow(createNodesWin);
 		DrawWindow(variablesWin);
 		DrawWindow(schemesWin);
+		DrawWindow(codeWin);
 
 		DrawButton(showCreateWindow);
 		DrawButton(showConsoleWindow);
