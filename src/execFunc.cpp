@@ -103,7 +103,7 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 		state = processing;
 	}
 }
-void DrawSelectedNodeOptions(AnyNodeType& node, Button* del, Button* edit) { //TODO: asta n ar tb sa fie aici
+void DrawSelectedNodeOptions(AnyNodeType& node, Button* del) { //TODO: asta n ar tb sa fie aici
 	int* pos = (int*)node.address;
 	int x = *pos, y = *(pos + 1), width = *(pos + 2), height = *(pos + 3);
 	
@@ -111,9 +111,6 @@ void DrawSelectedNodeOptions(AnyNodeType& node, Button* del, Button* edit) { //T
 
 	SetButtonPosition(del, x + width + 7, y + (height - del->height) / 2);
 	DrawButton(del);
-
-	SetButtonPosition(edit, x + width + del->width + 12, y + (height - edit->height) / 2);
-	DrawButton(edit);
 }
 void DragNode(AnyNodeType& node, int dx, int dy) {//TODO: asta n ar tb sa fie aici
 	if (node.address == nullptr || node.type == noType) { // TODO: nu cred ca e necesar sa verifici

@@ -20,7 +20,7 @@ enum ExecutionState {
 
 void GetClickedNode(AnyNodeType& clickedNode, int mx, int my, NodeArrays& nodes);
 void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dictionary* dict, MultiLineText* console);
-void DrawSelectedNodeOptions(AnyNodeType& node, Button* del, Button* edit);
+void DrawSelectedNodeOptions(AnyNodeType& node, Button* del);
 void DragNode(AnyNodeType& node, int mx, int my);
 void GetClickedPin(Pin*& pin, NodeArrays& nodes);
 int GetBestDistToPin(NodeArrays& nodes, int x, int y);

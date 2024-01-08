@@ -15,5 +15,5 @@ struct Link {
 };
 
 std::vector<std::string> GetSchemeFileNames();
-bool SaveSchemeToFile(NodeArrays& nodes, std::string path);
+bool SaveSchemeToFile(NodeArrays& nodes, std::string& path, bool override = true);
 bool LoadSchemeFromFile(NodeArrays& nodes, std::string path);

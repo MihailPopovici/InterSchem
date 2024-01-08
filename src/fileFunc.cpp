@@ -16,7 +16,26 @@ std::vector<std::string> GetSchemeFileNames() {
 	}
 	return vec;
 }
-bool SaveSchemeToFile(NodeArrays& nodes, std::string path) {
+bool SaveSchemeToFile(NodeArrays& nodes, std::string& path, bool override) {
+	if (!override) {
+		std::ifstream file(path);
+		unsigned long long count = 0;
+		while (file.good()) {
+			int pos = 0;
+			if (count > 0) {
+				std::string cntStr = " (" + std::to_string(count) + ")";
+				pos = path.find_last_of(cntStr);
+				path.erase(pos, cntStr.size());
+			}
+			else {
+				pos = path.find_last_of('.');
+			}
+			count++;
+			path.insert(pos, " (" + std::to_string(count) + ")");
+			file.close();
+			file = std::ifstream(path);
+		}
+	}
 	std::ofstream file(path, std::ofstream::binary);
 	if (file.fail()) {
 		return false;

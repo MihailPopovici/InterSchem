@@ -32,9 +32,6 @@ int main() {
 	Button* deleteSelectedNode = NewButton();
 	SetButtonColors(deleteSelectedNode, RED, WHITE);
 	SetButtonLabel(deleteSelectedNode, "Delete", 16, 5);
-	Button* editSelectedNode = NewButton();
-	SetButtonColors(editSelectedNode, BLUE, WHITE);
-	SetButtonLabel(editSelectedNode, "Edit", 16, 5);
 
 	Button* exec = NewButton();
 	SetButtonColors(exec, GREEN, RAYWHITE);
@@ -88,12 +85,12 @@ int main() {
 	SetWindowSpacing(createNodesWin, 5);
 	SetWindowPadding(createNodesWin, 5);
 	SetWindowTitle(createNodesWin, "New nodes", 32, WHITE);
-	AddElementToWindow(createNodesWin, { createStartNode, WindowElementTypeButton });
-	AddElementToWindow(createNodesWin, { createReadNode, WindowElementTypeButton });
-	AddElementToWindow(createNodesWin, { createWriteNode, WindowElementTypeButton });
-	AddElementToWindow(createNodesWin, { createAssignNode, WindowElementTypeButton });
-	AddElementToWindow(createNodesWin, { createDecisionNode, WindowElementTypeButton });
-	AddElementToWindow(createNodesWin, { createStopNode, WindowElementTypeButton });
+	AddElementToWindow(createNodesWin, { createStartNode, WindowElementType_Button });
+	AddElementToWindow(createNodesWin, { createReadNode, WindowElementType_Button });
+	AddElementToWindow(createNodesWin, { createWriteNode, WindowElementType_Button });
+	AddElementToWindow(createNodesWin, { createAssignNode, WindowElementType_Button });
+	AddElementToWindow(createNodesWin, { createDecisionNode, WindowElementType_Button });
+	AddElementToWindow(createNodesWin, { createStopNode, WindowElementType_Button });
 	createNodesWin->visible = false;
 
 	Dictionary* variablesDictionary = NewDictionary();
@@ -107,11 +104,8 @@ int main() {
 	SetWindowSpacing(variablesWin, 5);
 	SetWindowPadding(variablesWin, 5);
 	SetWindowTitle(variablesWin, "Variables", 32, RAYWHITE);
-	AddElementToWindow(variablesWin, { variablesDictionary, WindowElementTypeDictionary });
+	AddElementToWindow(variablesWin, { variablesDictionary, WindowElementType_Dictionary });
 	variablesWin->visible = false;
-
-	DictionaryRowHalf rhalf = { DictionaryRowHalfType_None, nullptr };
-	DictionaryRow* selectedRow = nullptr;
 
 	Font font = LoadFont("resources/IBMPlexMono-Medium.ttf");
 	MultiLineText* console = NewMultiLineText(650, 500, 8, 32, font, 20.0f, 5.0f, WHITE, BLACK);
@@ -123,35 +117,38 @@ int main() {
 	SetWindowSpacing(consoleWin, 5);
 	SetWindowPadding(consoleWin, 5);
 	SetWindowTitle(consoleWin, "Console", 32, RAYWHITE);
-	AddElementToWindow(consoleWin, { console, WindowElementTypeMultiLineText });
+	AddElementToWindow(consoleWin, { console, WindowElementType_MultiLineText });
 	Button* clearConsole = NewButton();
 	SetButtonColors(clearConsole, BLANK, RAYWHITE);
 	SetButtonLabel(clearConsole, "Clear", 20, 5);
-	AddElementToWindow(consoleWin, { clearConsole, WindowElementTypeButton });
+	AddElementToWindow(consoleWin, { clearConsole, WindowElementType_Button });
 	consoleWin->visible = false;
 
-	NodeArrays secondNodes;
-	auto schemes = GetSchemeFileNames();
-	Dictionary* schemeFiles = NewDictionary();
-	SetDictionaryPosition(schemeFiles, 100, 100);
-	SetDictionaryPadding(schemeFiles, 0);
-	SetDictionarySpacing(schemeFiles, 5);
-	SetDictionaryColor(schemeFiles, BLANK);
+	Grid* schemes = NewGrid();
+	SetGridSize(schemes, 2);
+	SetGridColor(schemes, BLANK);
+	SetGridPadding(schemes, 5);
+	SetGridSpacing(schemes, 5);
+	auto schemeFiles = GetSchemeFileNames();
+	for (auto& name : schemeFiles) {
+		Button* b = NewButton();
+		SetButtonColors(b, { 100, 100, 100, 100 }, RAYWHITE);
+		SetButtonLabel(b, name, 20, 5);
+		GridAddElement(schemes, b);
+	}
+	Button* refreshSchemes = NewButton();
+	SetButtonColors(refreshSchemes, { 150,150,150,150 }, RAYWHITE);
+	SetButtonLabel(refreshSchemes, "Refresh", 20, 5);
 	Window* schemesWin = NewWindow();
 	SetWindowColor(schemesWin, { 66, 66, 66, 255 });
-	SetWindowPosition(schemesWin, 5, 500);
+	SetWindowPosition(schemesWin, 500, 500);
 	SetWindowSpacing(schemesWin, 5);
 	SetWindowPadding(schemesWin, 5);
 	SetWindowTitle(schemesWin, "Schemes", 32, RAYWHITE);
-	AddElementToWindow(schemesWin, { schemeFiles, WindowElementTypeDictionary });
+	AddElementToWindow(schemesWin, { schemes, WindowElementType_Grid });
+	AddElementToWindow(schemesWin, { refreshSchemes, WindowElementType_Button });
 	schemesWin->visible = false;
-	for (auto& file : schemes) {
-		DictionaryRow* schRow = NewDictionaryRow();
-		SetDictionaryRowData(schRow, file, 0, 20, 5);
-		SetDictionaryRowColors(schRow, { 55, 55, 55, 200 }, BLACK);
-		AddDictionaryRow(schemeFiles, schRow);
-	}
-	ResizeDictionary(schemeFiles);
+	string currentFilePath = "";
 
 	MultiLineText* code = NewMultiLineText(650, 500, 25, 32, font, 20.0f, 5.0f, WHITE, BLACK);
 	MultiLineTextOverrideLine(code, 0, "");
@@ -162,11 +159,11 @@ int main() {
 	SetWindowSpacing(codeWin, 5.0f);
 	SetWindowPadding(codeWin, 5.0f);
 	SetWindowTitle(codeWin, "Translation", 32, RAYWHITE);
-	AddElementToWindow(codeWin, { code, WindowElementTypeMultiLineText });
+	AddElementToWindow(codeWin, { code, WindowElementType_MultiLineText });
 	Button* translate = NewButton();
 	SetButtonColors(translate, BLANK, WHITE);
 	SetButtonLabel(translate, "Translate", 20, 5);
-	AddElementToWindow(codeWin, { translate, WindowElementTypeButton });
+	AddElementToWindow(codeWin, { translate, WindowElementType_Button });
 	WindowSetVisible(codeWin, true);
 	
 	bool popup = false;
@@ -202,22 +199,17 @@ int main() {
 		}
 
 		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
-			bool success = SaveSchemeToFile(nodes, "data1.txt");
+			if (currentFilePath == "") {
+				currentFilePath = "schemes/data.interschem";
+				bool success = SaveSchemeToFile(nodes, currentFilePath, false);
+			}
+			else {
+				bool success = SaveSchemeToFile(nodes, currentFilePath, true);
+			}
 			MultiLineTextPushString(console, "Saved\n");
 			MultiLineTextSetLimitMax(console);
 		}
-		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_L)) {
-			CleanupNodes(nodes);
-			bool success = LoadSchemeFromFile(nodes, "data1.txt");
-			dragNode = selectedNode = { nullptr, noType };
-			selectedPin = nullptr;
-			currentNode = { nodes.startNode, start };
-			editorState = EditorStateNormal;
-			state = notExecuting;
-			MultiLineTextPushString(console, "Loaded\n");
-			MultiLineTextSetLimitMax(console);
-		}
-
+		
 		for (AssignNode* p : nodes.assignNodes) {
 			GetInputAssignNode(p);
 		}
@@ -245,48 +237,53 @@ int main() {
 		showSchemesWindow->visible = WindowShouldClose(schemesWin);
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-			if (editorState == EditorStateNormal) {
-				GetClickedNode(dragNode, mx, my, nodes);
-				if (dragNode.type != noType && dragNode.address != nullptr) {
-					int* pos = (int*)dragNode.address;
-					dx = *pos, dy = *(pos + 1);
-					dx -= mx, dy -= my;
-				}
-				auto drow = GetClickedDictionaryRow(schemeFiles);
-				if (drow != nullptr) {
-					// TODO: save/load file from a list
-				}
+			GetClickedNode(dragNode, mx, my, nodes);
+			if (dragNode.type != noType && dragNode.address != nullptr) {
+				int* pos = (int*)dragNode.address;
+				dx = *pos, dy = *(pos + 1);
+				dx -= mx, dy -= my;
 			}
 
-			if (editorState == EditorStateEditingNode) {
-				GetClickedPin(selectedPin, nodes);
-				if (selectedPin != nullptr && selectedPin->type == output) {
-					selectedNode.address = selectedPin->ownerPtr; //TODO: this should not be necessary
-					selectedNode.type = selectedPin->ownerType;
-
-					editorState = EditorStateAddingLink;
-				}
-			}
-			else if (editorState == EditorStateAddingLink) {
-				Pin* secondPin = nullptr;
-				GetClickedPin(secondPin, nodes);
-				if (secondPin != nullptr && secondPin->type == input && selectedPin != nullptr) {
+			Pin* secondPin = nullptr;
+			GetClickedPin(secondPin, nodes);
+			if (selectedPin == nullptr && secondPin != nullptr && secondPin->type == output) {
+				selectedPin = secondPin;
+				if (selectedPin != nullptr) {
 					switch (selectedPin->ownerType) {
-					case start: NewLink(((StartNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
-					case read: NewLink(((ReadNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
-					case write: NewLink(((WriteNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
-					case assign: NewLink(((AssignNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
-					case decision:
-						if (selectedPin == &((DecisionNode*)selectedPin->ownerPtr)->outPinTrue)
-							NewLink(((DecisionNode*)selectedPin->ownerPtr)->toPinTrue, *secondPin);
-						else
-							NewLink(((DecisionNode*)selectedPin->ownerPtr)->toPinFalse, *secondPin);
+					case start: ((StartNode*)selectedPin->ownerPtr)->toPin = nullptr; break;
+					case decision: {
+						DecisionNode* d = (DecisionNode*)selectedPin->ownerPtr;
+						if (selectedPin == &d->outPinTrue) {
+							d->toPinTrue = nullptr;
+						}
+						else {
+							d->toPinFalse = nullptr;
+						}
 						break;
-					default: break;
 					}
-					selectedPin = nullptr;
-					editorState = EditorStateEditingNode;
+					default:
+						*(Pin**)((Pin*)((int*)selectedPin->ownerPtr + 6) + 2) = nullptr;
+					}
 				}
+			}
+			else if (selectedPin != nullptr && secondPin != nullptr && secondPin->type == input) {
+				switch (selectedPin->ownerType) {
+				case start: NewLink(((StartNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
+				case read: NewLink(((ReadNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
+				case write: NewLink(((WriteNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
+				case assign: NewLink(((AssignNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
+				case decision:
+					if (selectedPin == &((DecisionNode*)selectedPin->ownerPtr)->outPinTrue)
+						NewLink(((DecisionNode*)selectedPin->ownerPtr)->toPinTrue, *secondPin);
+					else
+						NewLink(((DecisionNode*)selectedPin->ownerPtr)->toPinFalse, *secondPin);
+					break;
+				default: break;
+				}
+				selectedPin = nullptr;
+			}
+			else {
+				selectedPin = nullptr;
 			}
 		}
 		else if (IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
@@ -299,26 +296,16 @@ int main() {
 		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
 			GetClickedNode(selectedNode, mx, my, nodes);
 			if (selectedNode.address != nullptr) {
-				editorState = EditorStateSelectedNode;
 				deleteSelectedNode->visible = true;
-				editSelectedNode->visible = true;
 			}
 			else {
-				editorState = EditorStateNormal;
 				deleteSelectedNode->visible = false;
-				editSelectedNode->visible = false;
 			}
 		}
 
-		if (selectedNode.address != nullptr) {
-			if (IsButtonClicked(editSelectedNode)) {
-				editorState = EditorStateEditingNode;
-			}
-			if (IsButtonClicked(deleteSelectedNode)) {
-				EraseNode(nodes, selectedNode);
-				selectedNode = { nullptr, noType };
-				editorState = EditorStateNormal;
-			}
+		if (IsButtonClicked(deleteSelectedNode)) {
+			EraseNode(nodes, selectedNode);
+			selectedNode = { nullptr, noType };
 		}
 
 		if (IsButtonClicked(exec)) {
@@ -369,6 +356,34 @@ int main() {
 			UpdateVariablesTable(nodes, variablesDictionary);
 			EncodeScheme(code, variablesDictionary, nodes.startNode);
 		}
+		if (IsButtonClicked(refreshSchemes)) {
+			GridCleanup(schemes);
+			auto schemeFiles = GetSchemeFileNames();
+			for (auto& name : schemeFiles) {
+				Button* b = NewButton();
+				SetButtonColors(b, { 100, 100, 100, 100 }, RAYWHITE);
+				SetButtonLabel(b, name, 20, 5);
+				GridAddElement(schemes, b);
+			}
+			ResizeWindow(schemesWin);
+			WindowSetVisible(schemesWin, true);
+		}
+
+		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+			void* clickedScheme = GetGridClickedElement(schemes);
+			if (clickedScheme != nullptr) {
+				string path = "schemes/" + ((Button*)clickedScheme)->label + ".interschem";
+				CleanupNodes(nodes);
+				bool success = LoadSchemeFromFile(nodes, path);
+				currentFilePath = path;
+				dragNode = selectedNode = { nullptr, noType };
+				selectedPin = nullptr;
+				currentNode = { nodes.startNode, start };
+				state = notExecuting;
+				MultiLineTextPushString(console, "Loaded\n");
+				MultiLineTextSetLimitMax(console);
+			}
+		}
 
 		MultiLineTextEdit(console);
 		MultiLineTextEdit(code);
@@ -404,10 +419,29 @@ int main() {
 		}
 		else {
 			cout << "Done\n";
-			MultiLineTextPushString(console, "Program exited successfully");
+			MultiLineTextPushString(console, "Program exited successfully\n");
 			MultiLineTextSetLimitMax(console);
 			state = notExecuting;
 			currentNode = { nodes.startNode, start };
+		}
+
+		if (IsFileDropped()) {
+			FilePathList filesDropped = LoadDroppedFiles();
+			if (strcmp(strrchr(filesDropped.paths[0], '.'), ".interschem") == 0) {
+				CleanupNodes(nodes);
+				bool success = LoadSchemeFromFile(nodes, filesDropped.paths[0]);
+				currentFilePath = filesDropped.paths[0];
+				dragNode = selectedNode = { nullptr, noType };
+				selectedPin = nullptr;
+				currentNode = { nodes.startNode, start };
+				state = notExecuting;
+				MultiLineTextPushString(console, "Loaded\n");
+			}
+			else {
+				MultiLineTextPushString(console, "File type not supported\nOnly '.interschem' files are supported\n");
+			}
+			MultiLineTextSetLimitMax(console);
+			UnloadDroppedFiles(filesDropped);
 		}
 
 		windowWidth = GetScreenWidth(), windowHeight = GetScreenHeight();
@@ -426,11 +460,11 @@ int main() {
 		DrawButton(showVariablesWindow);
 		DrawButton(showSchemesWindow);
 
-		if (editorState == EditorStateAddingLink) {
+		if (selectedPin != nullptr) {
 			DrawGhostLink(selectedPin, mx, my);
 		}
-		if (editorState != EditorStateNormal) {
-			DrawSelectedNodeOptions(selectedNode, deleteSelectedNode, editSelectedNode);
+		if (selectedNode.address != nullptr) {
+			DrawSelectedNodeOptions(selectedNode, deleteSelectedNode);
 		}
 
 		DrawNodes(nodes);

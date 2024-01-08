@@ -92,6 +92,7 @@
       <ConformanceMode>true</ConformanceMode>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -127,6 +128,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)\external\include;$(ProjectDir)\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <DisableSpecificWarnings>
       </DisableSpecificWarnings>
+      <LanguageStandard>stdcpp17</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -145,6 +147,7 @@
     <ClCompile Include="src\evalExpression.cpp" />
     <ClCompile Include="src\execFunc.cpp" />
     <ClCompile Include="src\fileFunc.cpp" />
+    <ClCompile Include="src\grid.cpp" />
     <ClCompile Include="src\main.cpp" />
     <ClCompile Include="src\multilinetext.cpp" />
     <ClCompile Include="src\nodeComponents.cpp" />
@@ -168,6 +171,7 @@
     <ClInclude Include="include\evalExpression.h" />
     <ClInclude Include="include\execFunc.h" />
     <ClInclude Include="include\fileFunc.h" />
+    <ClInclude Include="include\grid.h" />
     <ClInclude Include="include\multilinetext.h" />
     <ClInclude Include="include\nodeComponents.h" />
     <ClInclude Include="include\nodeGeneral.h" />

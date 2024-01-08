@@ -5,7 +5,4 @@
 #include "dictionary.h"
 #include "singlelinetext.h"
 #include "multilinetext.h"
-
-struct Popup {
-
-};
+#include "grid.h"

@@ -7,10 +7,11 @@
 struct Button;
 
 enum WindowElementType {
-	WindowElementTypeButton,
-	WindowElementTypeDictionary, // only <string, int> for now
-	WindowElementTypeSingleLineText,
-	WindowElementTypeMultiLineText,
+	WindowElementType_Button,
+	WindowElementType_Dictionary, // only <string, int> for now
+	WindowElementType_SingleLineText,
+	WindowElementType_MultiLineText,
+	WindowElementType_Grid,
 };
 
 struct WindowElement {
