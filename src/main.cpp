@@ -60,6 +60,10 @@ int main() {
 	SetButtonColors(showSchemesWindow, { 66,66,66,255 }, RAYWHITE);
 	SetButtonLabel(showSchemesWindow, "Schemes", 20, 5);
 	SetButtonPosition(showSchemesWindow, showVariablesWindow->x + showVariablesWindow->width + 5, 0);
+	Button* showCodeWindow = NewButton();
+	SetButtonColors(showCodeWindow, { 66,66,66,255 }, RAYWHITE);
+	SetButtonLabel(showCodeWindow, "Code", 20, 5);
+	SetButtonPosition(showCodeWindow, showSchemesWindow->x + showSchemesWindow->width + 5, 0);
 
 	Button* createStartNode = NewButton();
 	SetButtonColors(createStartNode, DARKGREEN, WHITE);
@@ -158,13 +162,13 @@ int main() {
 	SetWindowPosition(codeWin, 650, 50);
 	SetWindowSpacing(codeWin, 5.0f);
 	SetWindowPadding(codeWin, 5.0f);
-	SetWindowTitle(codeWin, "Translation", 32, RAYWHITE);
+	SetWindowTitle(codeWin, "C++ Code", 32, RAYWHITE);
 	AddElementToWindow(codeWin, { code, WindowElementType_MultiLineText });
 	Button* translate = NewButton();
 	SetButtonColors(translate, BLANK, WHITE);
 	SetButtonLabel(translate, "Translate", 20, 5);
 	AddElementToWindow(codeWin, { translate, WindowElementType_Button });
-	WindowSetVisible(codeWin, true);
+	codeWin->visible = false;
 	
 	bool popup = false;
 	string popupMsg;
@@ -235,6 +239,7 @@ int main() {
 		showCreateWindow->visible = WindowShouldClose(createNodesWin);
 		showVariablesWindow->visible = WindowShouldClose(variablesWin);
 		showSchemesWindow->visible = WindowShouldClose(schemesWin);
+		showCodeWindow->visible = WindowShouldClose(codeWin);
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 			GetClickedNode(dragNode, mx, my, nodes);
@@ -351,6 +356,10 @@ int main() {
 			WindowSetVisible(schemesWin, true);
 			showSchemesWindow->visible = false;
 		}
+		if (IsButtonClicked(showCodeWindow)) {
+			WindowSetVisible(codeWin, true);
+			showCodeWindow->visible = false;
+		}
 		if (IsButtonClicked(translate)) {
 			MultiLineTextClear(code);
 			UpdateVariablesTable(nodes, variablesDictionary);
@@ -459,6 +468,7 @@ int main() {
 		DrawButton(showConsoleWindow);
 		DrawButton(showVariablesWindow);
 		DrawButton(showSchemesWindow);
+		DrawButton(showCodeWindow);
 
 		if (selectedPin != nullptr) {
 			DrawGhostLink(selectedPin, mx, my);

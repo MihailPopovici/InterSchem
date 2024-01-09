@@ -603,5 +603,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 		}
 	}
 
-	while (parcurgere(rootCopy) != nullptr) {}
+	while (parcurgere(rootCopy) != nullptr) {
+		
+	}
 }
