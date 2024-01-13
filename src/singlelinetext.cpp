@@ -1,5 +1,7 @@
 #include "singlelinetext.h"
 
+#include "window.h"
+
 SingleLineText* NewSingleLineText() {
 	SingleLineText* p = new SingleLineText{ 0 };
 	return p;
@@ -38,6 +40,9 @@ bool IsSingleLineTextClicked(SingleLineText* stext) {
 }
 void ResizeSingleLineText(SingleLineText* stext) {
 	stext->width = MeasureText(stext->str.c_str(), stext->fontSize) + 2 * stext->padding;
+	if (stext->window != nullptr) {
+		ResizeWindow(stext->window);
+	}
 }
 void InsertCharSingleLineText(SingleLineText* stext, char c) { //TODO: where pos
 	stext->str += c;
@@ -60,4 +65,37 @@ void DrawSingleLineText(SingleLineText* stext) {
 	}
 	DrawRectangle(stext->x, stext->y, stext->width, stext->height, stext->bgColor);
 	DrawText(stext->str.c_str(), stext->x + stext->padding, stext->y + stext->padding, stext->fontSize, stext->fontColor);
+}
+void EditSingleLineText(SingleLineText* stext) {
+	if (!stext->visible) {
+		return;
+	}
+
+	int mx = GetMouseX(), my = GetMouseY();
+	bool inBounds = (mx >= stext->x && mx < stext->x + stext->width) && (my >= stext->y && my < stext->y + stext->height);
+	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+		if (inBounds) {
+			stext->focused = true;
+		}
+		else {
+			stext->focused = false;
+		}
+	}
+	if (!stext->focused) {
+		return;
+	}
+
+	char c = GetCharPressed();
+	if (c != 0) {
+		InsertCharSingleLineText(stext, c);
+		if (stext->window != nullptr) {
+			ResizeWindow(stext->window);
+		}
+	}
+	if (IsKeyPressed(KEY_BACKSPACE)) {
+		EraseCharSingleLineText(stext);
+		if (stext->window != nullptr) {
+			ResizeWindow(stext->window);
+		}
+	}
 }

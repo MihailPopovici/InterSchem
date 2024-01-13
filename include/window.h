@@ -7,6 +7,7 @@
 struct Button;
 
 enum WindowElementType {
+	WindowElementType_None,
 	WindowElementType_Button,
 	WindowElementType_Dictionary, // only <string, int> for now
 	WindowElementType_SingleLineText,
@@ -44,6 +45,7 @@ void DrawWindow(Window* win);
 bool IsWindowHovered(Window* win);
 bool IsWindowClicked(Window* win);
 bool IsWindowElementClicked(Window* win);
+WindowElement GetWindowClickedElement(Window* win);
 void ResizeWindow(Window* win);
 void UpdateWindow(Window* win);
 bool WindowShouldClose(Window* win);

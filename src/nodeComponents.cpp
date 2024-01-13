@@ -68,6 +68,7 @@ void CleanupNodes(NodeArrays& nodes) {
 	if (nodes.startNode != nullptr) {
 		delete nodes.startNode;
 	}
+	nodes.startNode = nullptr;
 	for (ReadNode* p : nodes.readNodes) {
 		if (p != nullptr) {
 			delete p;

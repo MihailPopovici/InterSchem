@@ -3,12 +3,15 @@
 #include "raylib.h"
 #include <string>
 
+struct Window;
+
 struct SingleLineText {
 	int x, y, width, height;
 	int fontSize, padding;
 	bool visible, focused;
 	Color bgColor, fontColor;
 	std::string str;
+	Window* window;
 };
 
 SingleLineText* NewSingleLineText();
@@ -24,3 +27,4 @@ void InsertCharSingleLineText(SingleLineText* stext, char c);
 void EraseCharSingleLineText(SingleLineText* stext);
 void ClearStrSingleLineText(SingleLineText* stext);
 void DrawSingleLineText(SingleLineText* stext);
+void EditSingleLineText(SingleLineText* stext);

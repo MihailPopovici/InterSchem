@@ -2,6 +2,7 @@
 
 #include "button.h"
 #include "dictionary.h"
+#include "singlelinetext.h"
 #include "multilinetext.h"
 #include "grid.h"
 
@@ -38,6 +39,10 @@ void SetWindowPosition(Window* win, int x, int y) {
 			Dictionary* d = (Dictionary*)e.ptr;
 			SetDictionaryPosition(d, d->x + dx, d->y + dy);
 		}
+		else if (e.type == WindowElementType_SingleLineText) {
+			SingleLineText* s = (SingleLineText*)e.ptr;
+			SetSingleLineTextPosition(s, s->x + dx, s->y + dy);
+		}
 		else if (e.type == WindowElementType_MultiLineText) {
 			MultiLineText* m = (MultiLineText*)e.ptr;
 			MultiLineTextSetPosition(m, m->x + dx, m->y + dy);
@@ -68,6 +73,11 @@ void SetWindowPadding(Window* win, int padding) {
 			Dictionary* d = (Dictionary*)e.ptr;
 			SetDictionaryPosition(d, d->x - win->padding + padding, win->y + height);
 			height += d->height + win->spacing;
+		}
+		else if (e.type == WindowElementType_SingleLineText) {
+			SingleLineText* s = (SingleLineText*)e.ptr;
+			SetSingleLineTextPosition(s, s->x - win->padding + padding, win->y + height);
+			height += s->height + win->spacing;
 		}
 		else if (e.type == WindowElementType_MultiLineText) {
 			MultiLineText* m = (MultiLineText*)e.ptr;
@@ -103,6 +113,11 @@ void SetWindowSpacing(Window* win, int spacing) {
 			Dictionary* d = (Dictionary*)e.ptr;
 			SetDictionaryPosition(d, d->x, win->y + height);
 			height += d->height + spacing;
+		}
+		else if (e.type == WindowElementType_SingleLineText) {
+			SingleLineText* s = (SingleLineText*)e.ptr;
+			SetSingleLineTextPosition(s, s->x, win->y + height);
+			height += s->height + spacing;
 		}
 		else if (e.type == WindowElementType_MultiLineText) {
 			MultiLineText* m = (MultiLineText*)e.ptr;
@@ -156,6 +171,23 @@ void AddElementToWindow(Window* win, WindowElement el) {
 		}
 		win->height += d->height;
 	}
+	else if (el.type == WindowElementType_SingleLineText) {
+		SingleLineText* s = (SingleLineText*)el.ptr;
+		s->window = win;
+		if (!win->elements.empty()) {
+			SetSingleLineTextPosition(s, win->x + win->padding, win->y + win->height - win->padding + win->spacing);
+		}
+		else {
+			SetSingleLineTextPosition(s, win->x + win->padding, win->y + win->height - win->padding);
+		}
+		if (s->width + 2 * win->padding > win->width) {
+			win->width = s->width + 2 * win->padding;
+		}
+		if (!win->elements.empty()) {
+			win->height += win->spacing;
+		}
+		win->height += s->height;
+	}
 	else if (el.type == WindowElementType_MultiLineText) {
 		MultiLineText* m = (MultiLineText*)el.ptr;
 		m->window = win;
@@ -208,6 +240,9 @@ void DrawWindow(Window* win) {
 		else if (e.type == WindowElementType_Dictionary) {
 			DrawDictionary((Dictionary*)e.ptr);
 		}
+		else if (e.type == WindowElementType_SingleLineText) {
+			DrawSingleLineText((SingleLineText*)e.ptr);
+		}
 		else if (e.type == WindowElementType_MultiLineText) {
 			MultiLineTextDraw((MultiLineText*)e.ptr);
 		}
@@ -238,6 +273,11 @@ bool IsWindowElementClicked(Window* win) {
 				return true;
 			}
 		}
+		else if (e.type == WindowElementType_SingleLineText) {
+			if (IsSingleLineTextClicked((SingleLineText*)e.ptr)) {
+				return true;
+			}
+		}
 		else if (e.type == WindowElementType_MultiLineText) {
 			if (MultiLineTextIsClicked((MultiLineText*)e.ptr)) {
 				return true;
@@ -250,6 +290,39 @@ bool IsWindowElementClicked(Window* win) {
 		}
 	}
 	return false;
+}
+WindowElement GetWindowClickedElement(Window* win) {
+	if (!win->visible) {
+		return { nullptr, WindowElementType_None };
+	}
+	for (WindowElement& e : win->elements) {
+		if (e.type == WindowElementType_Button) {
+			if (IsButtonClicked((Button*)e.ptr)) {
+				return e;
+			}
+		}
+		else if (e.type == WindowElementType_Dictionary) {
+			if (IsDictionaryClicked((Dictionary*)e.ptr)) {
+				return e;
+			}
+		}
+		else if (e.type == WindowElementType_SingleLineText) {
+			if (IsSingleLineTextClicked((SingleLineText*)e.ptr)) {
+				return e;
+			}
+		}
+		else if (e.type == WindowElementType_MultiLineText) {
+			if (MultiLineTextIsClicked((MultiLineText*)e.ptr)) {
+				return e;
+			}
+		}
+		else if (e.type == WindowElementType_Grid) {
+			if (IsGridClicked((Grid*)e.ptr)) {
+				return e;
+			}
+		}
+	}
+	return { nullptr, WindowElementType_None };
 }
 void ResizeWindow(Window* win) {
 	int height = win->padding + win->close->height;
@@ -272,6 +345,14 @@ void ResizeWindow(Window* win) {
 			height += d->height;
 			if (d->width > maxWidth) {
 				maxWidth = d->width;
+			}
+		}
+		else if (el.type == WindowElementType_SingleLineText) {
+			SingleLineText* s = (SingleLineText*)el.ptr;
+			SetSingleLineTextPosition(s, s->x, win->y + height);
+			height += s->height;
+			if (s->width > maxWidth) {
+				maxWidth = s->width;
 			}
 		}
 		else if (el.type == WindowElementType_MultiLineText) {
@@ -303,10 +384,19 @@ void UpdateWindow(Window* win) {
 		return;
 	}
 	int mx = GetMouseX(), my = GetMouseY();
-	if (IsWindowClicked(win) && !IsWindowElementClicked(win)) {
-		win->dx = mx - win->x;
-		win->dy = my - win->y;
-		win->dragging = true;
+	if (IsWindowClicked(win)) {
+		if (!IsWindowElementClicked(win)) {
+			win->dx = mx - win->x;
+			win->dy = my - win->y;
+			win->dragging = true;
+		}
+		else {
+			WindowElement e = GetWindowClickedElement(win);
+			if (e.type == WindowElementType_SingleLineText) {
+				SingleLineText* s = (SingleLineText*)e.ptr;
+				s->focused = true;
+			}
+		}
 	}
 	else if (win->dragging && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) {
 		SetWindowPosition(win, mx - win->dx, my - win->dy);

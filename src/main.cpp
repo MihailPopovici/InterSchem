@@ -24,6 +24,7 @@ int main() {
 	int windowWidth = 1080, windowHeight = 800;
 	InitWindow(windowWidth, windowHeight, "Interschem");
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
+	SetExitKey(0);
 
 	AnyNodeType dragNode{ nullptr, noType };
 	AnyNodeType selectedNode{ nullptr, noType };
@@ -142,6 +143,9 @@ int main() {
 		SetButtonLabel(b, name, 20, 5);
 		GridAddElement(schemes, b);
 	}
+	Button* newScheme = NewButton();
+	SetButtonColors(newScheme, { 150,150,150,150 }, RAYWHITE);
+	SetButtonLabel(newScheme, "New scheme", 20, 5);
 	Button* refreshSchemes = NewButton();
 	SetButtonColors(refreshSchemes, { 150,150,150,150 }, RAYWHITE);
 	SetButtonLabel(refreshSchemes, "Refresh", 20, 5);
@@ -151,8 +155,22 @@ int main() {
 	SetWindowSpacing(schemesWin, 5);
 	SetWindowPadding(schemesWin, 5);
 	SetWindowTitle(schemesWin, "Schemes", 32, RAYWHITE);
+	Button* textSaveFile = NewButton();
+	SetButtonColors(textSaveFile, BLANK, RAYWHITE);
+	SetButtonLabel(textSaveFile, "Current scheme file name:", 20, 5);
+	SingleLineText* writeFileName = NewSingleLineText();
+	SetSingleLineTextColors(writeFileName, { 50, 50, 50, 255 }, RAYWHITE);
+	SetSingleLineTextFontSize(writeFileName, 20);
+	SetSingleLineTextPadding(writeFileName, 5);
+	Button* saveFile = NewButton();
+	SetButtonColors(saveFile, { 150,150,150,150 }, RAYWHITE);
+	SetButtonLabel(saveFile, "Save", 20, 5);
+	AddElementToWindow(schemesWin, { newScheme, WindowElementType_Button });
 	AddElementToWindow(schemesWin, { schemes, WindowElementType_Grid });
 	AddElementToWindow(schemesWin, { refreshSchemes, WindowElementType_Button });
+	AddElementToWindow(schemesWin, { textSaveFile, WindowElementType_Button });
+	AddElementToWindow(schemesWin, { writeFileName, WindowElementType_SingleLineText });
+	AddElementToWindow(schemesWin, { saveFile, WindowElementType_Button });
 	schemesWin->visible = false;
 	string currentFilePath = "";
 
@@ -195,7 +213,7 @@ int main() {
 
 			BeginDrawing();
 
-			ClearBackground({ 200, 200, 200, 100 });
+			ClearBackground({ 100, 100, 100, 100 });
 			int popupWidth = MeasureText(popupMsg.c_str(), 32);
 			DrawText(popupMsg.c_str(), (windowWidth - popupWidth) / 2, (windowHeight - 32) / 2, 32, BLACK);
 
@@ -204,18 +222,6 @@ int main() {
 			continue;
 		}
 
-		if (IsKeyDown(KEY_LEFT_CONTROL) && IsKeyPressed(KEY_S)) {
-			if (currentFilePath == "") {
-				currentFilePath = "schemes/data.interschem";
-				bool success = SaveSchemeToFile(nodes, currentFilePath, false);
-			}
-			else {
-				bool success = SaveSchemeToFile(nodes, currentFilePath, true);
-			}
-			MultiLineTextPushString(console, "Saved\n");
-			MultiLineTextSetLimitMax(console);
-		}
-		
 		for (AssignNode* p : nodes.assignNodes) {
 			GetInputAssignNode(p);
 		}
@@ -236,6 +242,7 @@ int main() {
 		UpdateWindow(createNodesWin);
 		UpdateWindow(variablesWin);
 		UpdateWindow(schemesWin);
+		EditSingleLineText(writeFileName);
 		UpdateWindow(codeWin);
 		showConsoleWindow->visible = WindowShouldClose(consoleWin);
 		showCreateWindow->visible = WindowShouldClose(createNodesWin);
@@ -379,20 +386,58 @@ int main() {
 			ResizeWindow(schemesWin);
 			WindowSetVisible(schemesWin, true);
 		}
+		if (IsButtonClicked(saveFile)) {
+			if (currentFilePath == "") {
+				if (!writeFileName->str.empty() /*TODO: && ValidFileName(writeFileName->str) && file name doesn't already exist*/) {
+					currentFilePath = "schemes/" + writeFileName->str + ".interschem";
+					bool success = SaveSchemeToFile(nodes, currentFilePath, false);
+					GridCleanup(schemes);
+					auto schemeFiles = GetSchemeFileNames();
+					for (auto& name : schemeFiles) {
+						Button* b = NewButton();
+						SetButtonColors(b, { 100, 100, 100, 100 }, RAYWHITE);
+						SetButtonLabel(b, name, 20, 5);
+						GridAddElement(schemes, b);
+					}
+					ResizeWindow(schemesWin);
+					WindowSetVisible(schemesWin, true);
+				}
+				else {
+					popup = true;
+					popupMsg = "Invalid file name";
+					continue;
+				}
+			}
+			else {
+				bool success = SaveSchemeToFile(nodes, currentFilePath, true);
+			}
+		}
+		if (IsButtonClicked(newScheme)) {
+			CleanupNodes(nodes);
+			currentFilePath.clear();
+			writeFileName->str.clear();
+			ResizeSingleLineText(writeFileName);
+			dragNode = selectedNode = { nullptr, noType };
+			selectedPin = nullptr;
+			currentNode = { nodes.startNode, start };
+			state = notExecuting;
+		}
+		
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 			void* clickedScheme = GetGridClickedElement(schemes);
 			if (clickedScheme != nullptr) {
-				string path = "schemes/" + ((Button*)clickedScheme)->label + ".interschem";
+				string filename = ((Button*)clickedScheme)->label;
+				string path = "schemes/" + filename + ".interschem";
 				CleanupNodes(nodes);
 				bool success = LoadSchemeFromFile(nodes, path);
 				currentFilePath = path;
+				writeFileName->str = filename;
+				ResizeSingleLineText(writeFileName);
 				dragNode = selectedNode = { nullptr, noType };
 				selectedPin = nullptr;
 				currentNode = { nodes.startNode, start };
 				state = notExecuting;
-				MultiLineTextPushString(console, "Loaded\n");
-				MultiLineTextSetLimitMax(console);
 			}
 		}
 
@@ -436,25 +481,6 @@ int main() {
 			currentNode = { nodes.startNode, start };
 		}
 
-		if (IsFileDropped()) {
-			FilePathList filesDropped = LoadDroppedFiles();
-			if (strcmp(strrchr(filesDropped.paths[0], '.'), ".interschem") == 0) {
-				CleanupNodes(nodes);
-				bool success = LoadSchemeFromFile(nodes, filesDropped.paths[0]);
-				currentFilePath = filesDropped.paths[0];
-				dragNode = selectedNode = { nullptr, noType };
-				selectedPin = nullptr;
-				currentNode = { nodes.startNode, start };
-				state = notExecuting;
-				MultiLineTextPushString(console, "Loaded\n");
-			}
-			else {
-				MultiLineTextPushString(console, "File type not supported\nOnly '.interschem' files are supported\n");
-			}
-			MultiLineTextSetLimitMax(console);
-			UnloadDroppedFiles(filesDropped);
-		}
-
 		windowWidth = GetScreenWidth(), windowHeight = GetScreenHeight();
 		BeginDrawing();
 		// render on screen
@@ -482,7 +508,7 @@ int main() {
 		DrawNodes(nodes);
 
 		DrawButton(exec);
-		
+
 		EndDrawing();
 	}
 
