@@ -16,7 +16,7 @@ bool isNumber(std::string s) {
     return true;
 }
 bool isOperator(std::string s) {
-    return (s == "+" || s == "-" || s == "*" || s == "/" || s == "^");
+    return (s == "+" || s == "-" || s == "*" || s == "/" || s == "^" || s=="%");
 }
 bool isParenthesis(std::string s) {
     return (s == "(" || s == ")");
@@ -34,7 +34,7 @@ bool correctVariableName(std::string s) {
 }
 int priority(std::string s) {
     if (s == "+" || s == "-") return 1;
-    if (s == "*" || s == "/") return 2;
+    if (s == "*" || s == "/" || s=="%") return 2;
     if (s == "^") return 3;
     if (isFunction(s)) return 4;
     return -1;
@@ -45,6 +45,7 @@ float applyOp(float val1, float val2, std::string op) {
     if (op == "*") return val1 * val2;
     if (op == "/") return val1 / val2;
     if (op == "^") return pow(val1, val2);
+    if (op == "%") return (int)val1 % (int)val2;
     return -1;
 }
 float applyFunction(float val, std::string func) {
@@ -70,7 +71,7 @@ int nrOfDots(std::string s) {
     return cnt;
 }
 void SplitIntoTokens(std::string s, std::vector<std::string>& tokens) {
-    std::string operators = "()+-*/^";
+    std::string operators = "()+-*/^%";
     std::string token = "";
     for (int i = 0; i < s.size(); i++) {
         if (operators.find(s[i]) != std::string::npos) {
