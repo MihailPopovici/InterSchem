@@ -21,6 +21,5 @@ struct Pin {
 };
 
 void DrawLink(Pin& from, Pin* to);
-void DrawGhostLink(AnyNodeType& node, float mx, float my);
-void DrawGhostLink(Pin* pin, float mx, float my);
+void DrawGhostLink(Pin* pin, int mx, int my);
 void NewLink(Pin*& destination, Pin& source);
