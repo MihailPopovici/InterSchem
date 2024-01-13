@@ -570,7 +570,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			if (it == viz.end()) {
 				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
 			}
-			else {
+			else if (p->toPin->ownerType == decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it];
 				node* x = f(first, second);
@@ -586,7 +586,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			if (it == viz.end()) {
 				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
 			}
-			else {
+			else if (p->toPin->ownerType == decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it];
 				node* x = f(first, second);
@@ -602,7 +602,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			if (it == viz.end()) {
 				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
 			}
-			else {
+			else if (p->toPin->ownerType == decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it];
 				node* x = f(first, second);
@@ -622,7 +622,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			if (it1 == viz.end()) {
 				q.push({ n1, { p->toPinTrue->ownerPtr, p->toPinTrue->ownerType } });
 			}
-			else {
+			else if (p->toPinTrue->ownerType == decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it1];
 				node* x = f(first, second);
@@ -632,7 +632,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			if (it2 == viz.end()) {
 				q.push({ n2, { p->toPinFalse->ownerPtr, p->toPinFalse->ownerType } });
 			}
-			else {
+			else if (p->toPinFalse->ownerType == decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it2];
 				node* x = f(first, second);
@@ -640,8 +640,185 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			}
 		}
 	}
-
-	while (parcurgere(rootCopy) != nullptr) {
-		
+	//Construirea vectorului de noduri while
+	vector<node*> whiles;
+	node* n = parcurgere(rootCopy);
+	while (n != nullptr) {
+		whiles.push_back(n);
+		n = parcurgere(rootCopy);
 	}
+	//DFS
+	vector<node*> falseBranches;
+	vector<node*> trueBranches;
+	stack<pair<int, node*>> nodes;
+	vector<pair<int, node*>> visited;
+	nodes.push({ 0,rootCopy });
+	while (!nodes.empty()) {
+		auto [scope, currentNode] = nodes.top();
+		nodes.pop();
+		pair<int, node*> pereche;
+		pereche.first = scope;
+		pereche.second = currentNode;
+		auto it = find(visited.begin(), visited.end(), pereche);
+		if (it == visited.end()) {
+			visited.push_back({ scope, currentNode });
+		}
+		for (int i = currentNode->sons.size() - 1; i >= 0; i--) {
+			pair<int, node*> pereche;
+			pereche.first = scope + 1;
+			pereche.second = currentNode->sons[i];
+			auto it = find(visited.begin(), visited.end(), pereche);
+			if (it == visited.end()) {
+				//verificam daca e nod de decizie si nu e while
+				auto it2 = find(whiles.begin(), whiles.end(), currentNode);
+				auto it3 = find(trueBranches.begin(), trueBranches.end(), currentNode);
+				auto it4 = find(falseBranches.begin(), falseBranches.end(), currentNode);
+				if (it2 == whiles.end() && it3 == trueBranches.end() && it4 == falseBranches.end() && currentNode->info.type == decision) {
+					trueBranches.push_back(currentNode->sons[0]);
+					falseBranches.push_back(currentNode->sons[1]);
+					nodes.push({ scope,currentNode->sons[1] });
+					nodes.push({ scope,currentNode->sons[0] });
+					i = -1;
+				}
+				else {
+					nodes.push({ scope + 1,currentNode->sons[i] });
+				}
+			}
+		}
+	}
+	int lastScope = 0;
+	int shouldClose = 0;
+	for (int i = 0; i < visited.size(); i++) {
+		auto [scope, currentNode] = visited[i];
+		pair<int, node*> pereche;
+		pereche.first = scope;
+		pereche.second = currentNode->parent;
+		auto it = find(visited.begin(), visited.end(), pereche);
+		if (shouldClose > 0 && it != visited.end()) {
+			string text = "";
+			for (int j = 0; j < scope + 1; j++)
+				text += "    ";
+			text += "}";
+			MultiLineTextPushLine(code, text);
+			shouldClose--;
+		}
+		if (currentNode->info.type == start) {
+			MultiLineTextPushString(code, "#include <iostream>");
+			MultiLineTextPushLine(code, "#include <cmath>");
+			MultiLineTextPushLine(code, "");
+			MultiLineTextPushLine(code, "using namespace std;");
+			MultiLineTextPushLine(code, "");
+			MultiLineTextPushLine(code, "int main(){");
+			if (dict->rows.size() != 0) {
+				string varDeclaration = "    ";
+				varDeclaration += "float ";
+				for (int i = 0; i < dict->rows.size() - 1; i++) {
+					varDeclaration += dict->rows[i]->key;
+					varDeclaration += "=0, ";
+				}
+				varDeclaration += dict->rows[dict->rows.size() - 1]->key;
+				varDeclaration += "=0;";
+				MultiLineTextPushLine(code, varDeclaration);
+			}
+		}
+		else if (currentNode->info.type == assign) {
+			if (scope < visited[i - 1].first) {
+				string text = "";
+				for (int j = 0; j < scope; j++)
+					text += "    ";
+				text += "}";
+				MultiLineTextPushLine(code, text);
+			}
+			string text = "";
+			for (int j = 0; j < scope; j++)
+				text += "    ";
+			AssignNode* p = (AssignNode*)currentNode->info.address;
+			text += p->myVarName->str;
+			text += " = ";
+			text += p->expression->str;
+			text += ";";
+			MultiLineTextPushLine(code, text);
+		}
+		else if (currentNode->info.type == write) {
+			if (scope < visited[i - 1].first) {
+				string text = "";
+				for (int j = 0; j < scope; j++)
+					text += "    ";
+				text += "}";
+				MultiLineTextPushLine(code, text);
+			}
+			string text = "";
+			for (int j = 0; j < scope; j++)
+				text += "    ";
+			WriteNode* p = (WriteNode*)currentNode->info.address;
+			text += "cout << ";
+			text += p->expression->str;
+			text += ";";
+			MultiLineTextPushLine(code, text);
+		}
+		else if (currentNode->info.type == read) {
+			if (scope < visited[i - 1].first) {
+				string text = "";
+				for (int j = 0; j < scope; j++)
+					text += "    ";
+				text += "}";
+				MultiLineTextPushLine(code, text);
+			}
+			string text = "";
+			for (int j = 0; j < scope; j++)
+				text += "    ";
+			ReadNode* p = (ReadNode*)currentNode->info.address;
+			text += "cin >> ";
+			text += p->myVarName->str;
+			text += ";";
+			MultiLineTextPushLine(code, text);
+		}
+		else if (currentNode->info.type == decision) {
+			if (scope < visited[i - 1].first) {
+				string text = "";
+				for (int j = 0; j < scope; j++)
+					text += "    ";
+				text += "}";
+				MultiLineTextPushLine(code, text);
+			}
+			DecisionNode* p = (DecisionNode*)currentNode->info.address;
+			//verificam daca este un nod de tipul while
+			auto it = find(whiles.begin(), whiles.end(), currentNode);
+			auto it2 = find(trueBranches.begin(), trueBranches.end(), currentNode);
+			auto it3 = find(falseBranches.begin(), falseBranches.end(), currentNode);
+			if (it != whiles.end()) {
+				string text = "";
+				for (int j = 0; j < scope; j++)
+					text += "    ";
+				text += "while(";
+				text += p->expression->str;
+				text += "){";
+				MultiLineTextPushLine(code, text);
+			}
+			else if (it2 == trueBranches.end() && it3 == falseBranches.end()) {
+				string text = "";
+				for (int j = 0; j < scope; j++)
+					text += "    ";
+				text += "if(";
+				text += p->expression->str;
+				text += "){";
+				MultiLineTextPushLine(code, text);
+			}
+			else if (it3 != falseBranches.end()) {
+				string text = "";
+				for (int j = 0; j < scope; j++)
+					text += "    ";
+				text += "else{";
+				MultiLineTextPushLine(code, text);
+				shouldClose++;
+			}
+		}
+		lastScope = scope;
+	}
+	if (lastScope != 1) {
+		MultiLineTextPushLine(code, "    }");
+	}
+	MultiLineTextPushLine(code, "    return 0;");
+	MultiLineTextPushLine(code, "}");
+	MultiLineTextSetLimitMax(code);
 }
