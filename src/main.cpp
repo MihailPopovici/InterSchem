@@ -18,6 +18,8 @@ enum EditorState {
 	EditorStateLinkingVariable
 };
 
+NodeArrays nodes;
+
 int main() {
 	int windowWidth = 1080, windowHeight = 800;
 	InitWindow(windowWidth, windowHeight, "Interschem");
@@ -40,7 +42,7 @@ int main() {
 	SetButtonPosition(exec, windowWidth - exec->width, 0);
 	exec->visible = true;
 
-	NodeArrays nodes;
+	//NodeArrays nodes;
 
 	ExecutionState state = notExecuting;
 	AnyNodeType currentNode{ nullptr, noType };
@@ -192,7 +194,7 @@ int main() {
 	string popupMsg;
 
 	int dx = 0, dy = 0;
-	SetTargetFPS(120);
+	SetTargetFPS(90);
 	while (!WindowShouldClose()) {
 		if (IsWindowResized()) {
 			int nwidth = GetScreenWidth(), nheight = GetScreenHeight();

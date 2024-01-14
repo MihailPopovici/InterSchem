@@ -112,8 +112,46 @@ void DrawSelectedNodeOptions(AnyNodeType& node, Button* del) { //TODO: asta n ar
 	SetButtonPosition(del, x + width + 7, y + (height - del->height) / 2);
 	DrawButton(del);
 }
+bool NodeNextPositionValid(void* nodePtr, int dx, int dy) {
+	int mx = GetMouseX(), my = GetMouseY();
+	int* p = (int*)nodePtr;
+	int first_x1 = dx + mx, first_y1 = dy + my, first_x2 = first_x1 + *(p + 2), first_y2 = first_y1 + *(p + 3);
+	std::vector<void*> allNodes;
+	if (nodes.startNode != nullptr) {
+		allNodes.push_back(nodes.startNode);
+	}
+	for (auto& p : nodes.readNodes) {
+		allNodes.push_back(p);
+	}
+	for (auto& p : nodes.writeNodes) {
+		allNodes.push_back(p);
+	}
+	for (auto& p : nodes.assignNodes) {
+		allNodes.push_back(p);
+	}
+	for (auto& p : nodes.decisionNodes) {
+		allNodes.push_back(p);
+	}
+	for (auto& p : nodes.stopNodes) {
+		allNodes.push_back(p);
+	}
+	for (void* secondNodePtr : allNodes) {
+		if (nodePtr == secondNodePtr) {
+			continue;
+		}
+		int* pos = (int*)secondNodePtr;
+		int second_x1 = *pos, second_y1 = *(pos + 1), second_x2 = second_x1 + *(pos + 2), second_y2 = second_y1 + *(pos + 3);
+		if (second_x1 <= first_x2 && first_x1 < second_x2 && second_y1 <= first_y2 && first_y1 < second_y2) {
+			return false;
+		}
+	}
+	return true;
+}
 void DragNode(AnyNodeType& node, int dx, int dy) {//TODO: asta n ar tb sa fie aici
-	if (node.address == nullptr || node.type == noType) { // TODO: nu cred ca e necesar sa verifici
+	if (node.address == nullptr) {
+		return; 
+	}
+	if (!NodeNextPositionValid(node.address, dx, dy)) {
 		return;
 	}
 	int mx = GetMouseX(), my = GetMouseY();

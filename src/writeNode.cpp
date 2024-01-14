@@ -96,7 +96,6 @@ void ResizeWriteNode(WriteNode* node) {
 	
 }
 void GetInputWriteNode(WriteNode* node) {
-	//std::cout << node->myVarName << " " << node->expression << "\n";
 	if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
 		node->expression->focused = IsSingleLineTextClicked(node->expression);
 	}
