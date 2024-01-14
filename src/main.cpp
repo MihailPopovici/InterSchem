@@ -42,8 +42,6 @@ int main() {
 	SetButtonPosition(exec, windowWidth - exec->width, 0);
 	exec->visible = true;
 
-	//NodeArrays nodes;
-
 	ExecutionState state = notExecuting;
 	AnyNodeType currentNode{ nullptr, noType };
 
@@ -251,6 +249,21 @@ int main() {
 		showCodeWindow->visible = WindowShouldClose(codeWin);
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
+			void* clickedScheme = GetGridClickedElement(schemes);
+			if (clickedScheme != nullptr) {
+				string filename = ((Button*)clickedScheme)->label;
+				string path = "schemes/" + filename + ".interschem";
+				CleanupNodes(nodes);
+				bool success = LoadSchemeFromFile(nodes, path);
+				currentFilePath = path;
+				writeFileName->str = filename;
+				ResizeSingleLineText(writeFileName);
+				dragNode = selectedNode = { nullptr, noType };
+				selectedPin = nullptr;
+				currentNode = { nodes.startNode, start };
+				state = notExecuting;
+			}
+
 			GetClickedNode(dragNode, mx, my, nodes);
 			if (dragNode.type != noType && dragNode.address != nullptr) {
 				int* pos = (int*)dragNode.address;
@@ -423,24 +436,6 @@ int main() {
 			state = notExecuting;
 		}
 		
-
-		if (IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) {
-			void* clickedScheme = GetGridClickedElement(schemes);
-			if (clickedScheme != nullptr) {
-				string filename = ((Button*)clickedScheme)->label;
-				string path = "schemes/" + filename + ".interschem";
-				CleanupNodes(nodes);
-				bool success = LoadSchemeFromFile(nodes, path);
-				currentFilePath = path;
-				writeFileName->str = filename;
-				ResizeSingleLineText(writeFileName);
-				dragNode = selectedNode = { nullptr, noType };
-				selectedPin = nullptr;
-				currentNode = { nodes.startNode, start };
-				state = notExecuting;
-			}
-		}
-
 		MultiLineTextEdit(console);
 		MultiLineTextEdit(code);
 		if (state == notExecuting) {

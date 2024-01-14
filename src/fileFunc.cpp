@@ -64,7 +64,8 @@ bool SaveSchemeToFile(NodeArrays& nodes, std::string& path, bool override) {
 		else {
 			file.write((char*)(&p->toPin), sizeof(void*));
 		}
-		file.write((char*)(p->myVarName), sizeof(SingleLineText) - sizeof(std::string));
+		file.write((char*)(p->myVarName), 6 * sizeof(int));
+		file.write((char*)((int*)p->myVarName + 6) + 2, 2 * sizeof(Color));
 		size_t len = p->myVarName->str.size();
 		file.write((char*)(&len), sizeof(size_t));
 		if (len > 0) {
@@ -83,7 +84,8 @@ bool SaveSchemeToFile(NodeArrays& nodes, std::string& path, bool override) {
 		else {
 			file.write((char*)(&p->toPin), sizeof(void*));
 		}
-		file.write((char*)(p->expression), sizeof(SingleLineText) - sizeof(std::string));
+		file.write((char*)(p->expression), 6 * sizeof(int));
+		file.write((char*)((int*)p->expression + 6) + 2, 2 * sizeof(Color));
 		size_t len = p->expression->str.size();
 		file.write((char*)(&len), sizeof(size_t));
 		if (len > 0) {
@@ -102,13 +104,15 @@ bool SaveSchemeToFile(NodeArrays& nodes, std::string& path, bool override) {
 		else {
 			file.write((char*)(&p->toPin), sizeof(void*));
 		}
-		file.write((char*)(p->myVarName), sizeof(SingleLineText) - sizeof(std::string));
+		file.write((char*)(p->myVarName), 6 * sizeof(int));
+		file.write((char*)((int*)p->myVarName + 6) + 2, 2 * sizeof(Color));
 		size_t len = p->myVarName->str.size();
 		file.write((char*)(&len), sizeof(size_t));
 		if (len > 0) {
 			file.write(p->myVarName->str.c_str(), len);
 		}
-		file.write((char*)(p->expression), sizeof(SingleLineText) - sizeof(std::string));
+		file.write((char*)(p->expression), 6 * sizeof(int));
+		file.write((char*)((int*)p->expression + 6) + 2, 2 * sizeof(Color));
 		len = p->expression->str.size();
 		file.write((char*)(&len), sizeof(size_t));
 		if (len > 0) {
@@ -133,7 +137,8 @@ bool SaveSchemeToFile(NodeArrays& nodes, std::string& path, bool override) {
 		else {
 			file.write((char*)(&p->toPinFalse), sizeof(void*));
 		}
-		file.write((char*)(p->expression), sizeof(SingleLineText) - sizeof(std::string));
+		file.write((char*)(p->expression), 6 * sizeof(int));
+		file.write((char*)((int*)p->expression + 6) + 2, 2 * sizeof(Color));
 		size_t len = p->expression->str.size();
 		file.write((char*)(&len), sizeof(size_t));
 		if (len > 0) {
@@ -150,7 +155,7 @@ bool SaveSchemeToFile(NodeArrays& nodes, std::string& path, bool override) {
 	return true;
 }
 bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
-	std::ifstream file(path);
+	std::ifstream file(path, std::ifstream::binary);
 	if (file.fail()) {
 		return false;
 	}
@@ -189,7 +194,8 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 		if (toNode != nullptr) {
 			links.push_back({ node, toNode, LinkType_Normal });
 		}
-		file.read((char*)(p->myVarName), sizeof(SingleLineText) - sizeof(std::string));
+		file.read((char*)(p->myVarName), 6 * sizeof(int));
+		file.read((char*)((int*)p->myVarName + 6) + 2, 2 * sizeof(Color));
 		size_t len = 0;
 		file.read((char*)(&len), sizeof(size_t));
 		if (len > 0) {
@@ -216,7 +222,8 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 		if (toNode != nullptr) {
 			links.push_back({ node, toNode, LinkType_Normal });
 		}
-		file.read((char*)(p->expression), sizeof(SingleLineText) - sizeof(std::string));
+		file.read((char*)(p->expression), 6 * sizeof(int));
+		file.read((char*)((int*)p->expression + 6) + 2, 2 * sizeof(Color));
 		size_t len = 0;
 		file.read((char*)(&len), sizeof(size_t));
 		if (len > 0) {
@@ -243,7 +250,8 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 		if (toNode != nullptr) {
 			links.push_back({ node, toNode, LinkType_Normal });
 		}
-		file.read((char*)(p->myVarName), sizeof(SingleLineText) - sizeof(std::string));
+		file.read((char*)(p->myVarName), 6 * sizeof(int));
+		file.read((char*)((int*)p->myVarName + 6) + 2, 2 * sizeof(Color));
 		size_t len = 0;
 		file.read((char*)(&len), sizeof(size_t));
 		if (len > 0) {
@@ -253,7 +261,8 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 			p->myVarName->str = str;
 			delete[] str;
 		}
-		file.read((char*)(p->expression), sizeof(SingleLineText) - sizeof(std::string));
+		file.read((char*)(p->expression), 6 * sizeof(int));
+		file.read((char*)((int*)p->expression + 6) + 2, 2 * sizeof(Color));
 		file.read((char*)(&len), sizeof(size_t));
 		if (len > 0) {
 			char* str = new char[len + 1];
@@ -284,7 +293,8 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 		if (toNode != nullptr) {
 			links.push_back({ node, toNode, LinkType_False });
 		}
-		file.read((char*)(p->expression), sizeof(SingleLineText) - sizeof(std::string));
+		file.read((char*)(p->expression), 6 * sizeof(int));
+		file.read((char*)((int*)p->expression + 6) + 2, 2 * sizeof(Color));
 		size_t len = 0;
 		file.read((char*)(&len), sizeof(size_t));
 		if (len > 0) {
