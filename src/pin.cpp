@@ -70,13 +70,36 @@ std::vector<Vector2> CreateRoad(const Vector2 A, const Vector2 B, void* firstNod
 			if (left ^ top ^ right ^ bottom) {
 				if (left) {
 					if (node == firstNode) {
-						points[1] = bottomLeft;
-						points.insert(points.begin() + 2, { bottomLeft.x, points[2].y });
-						solved.insert(solved.begin() + 2, true);
-						pos++;
+						if (A.y == points[pos].y && pos == 1) {
+							points.insert(points.begin() + 1, bottomRight);
+							points[2].y = bottomRight.y;
+							solved.insert(solved.begin() + 1, true);
+							pos = 1;
+						}
+						else if (A.y != bottomRight.y) {
+							points[1] = topRight;
+							points.insert(points.begin() + pos, topLeft);
+							points.insert(points.begin() + pos + 1, intLeft);
+							solved.insert(solved.begin() + pos, true);
+							solved.insert(solved.begin() + pos + 1, true);
+							pos = 3;
+						}
+						else {
+							points[1] = bottomLeft;
+							points.insert(points.begin() + 2, { bottomLeft.x, points[2].y });
+							solved.insert(solved.begin() + 2, true);
+							pos++;
+						}
 						break;
 					}
-					else {
+					else if (node == secondNode) {
+						points.insert(points.begin() + pos, { topLeft.x, points[pos].y });
+						points[pos + 1] = topLeft;
+						solved.insert(solved.begin() + pos + 1, true);
+						pos--;
+						break;
+					}
+					else if (points[pos - 1].x != topRight.x && points[pos - 1].x != topLeft.x) {
 						points[pos].x = bottomLeft.x;
 						points.insert(points.begin() + pos + 1, bottomLeft);
 						points.insert(points.begin() + pos + 2, { points[pos + 2].x, bottomLeft.y });
@@ -86,13 +109,36 @@ std::vector<Vector2> CreateRoad(const Vector2 A, const Vector2 B, void* firstNod
 				}
 				else if (right) {
 					if (node == firstNode) {
-						points[1] = bottomRight;
-						points.insert(points.begin() + 2, { bottomRight.x, points[2].y });
-						solved.insert(solved.begin() + 2, true);
-						pos++;
+						if (A.y == points[pos].y && pos == 1) {
+							points.insert(points.begin() + 1, bottomLeft);
+							points[2].y = bottomLeft.y;
+							solved.insert(solved.begin() + 1, true);
+							pos = 1;
+						}
+						else if (A.y != bottomLeft.y) {
+							points[1] = topLeft;
+							points.insert(points.begin() + pos, topRight);
+							points.insert(points.begin() + pos + 1, intRight);
+							solved.insert(solved.begin() + pos, true);
+							solved.insert(solved.begin() + pos + 1, true);
+							pos = 3;
+						}
+						else {
+							points[1] = bottomRight;
+							points.insert(points.begin() + 2, { bottomRight.x, points[2].y });
+							solved.insert(solved.begin() + 2, true);
+							pos++;
+						}
 						break;
 					}
-					else {
+					else if (node == secondNode) {
+						points.insert(points.begin() + pos, { topRight.x, points[pos].y });
+						points[pos + 1] = topRight;
+						solved.insert(solved.begin() + pos + 1, true);
+						pos--;
+						break;
+					}
+					else if (points[pos - 1].x != topRight.x && points[pos - 1].x != topLeft.x) {
 						points[pos].x = bottomRight.x;
 						points.insert(points.begin() + pos + 1, bottomRight);
 						points.insert(points.begin() + pos + 2, { points[pos + 2].x, bottomRight.y });
@@ -120,6 +166,20 @@ std::vector<Vector2> CreateRoad(const Vector2 A, const Vector2 B, void* firstNod
 					}
 				}
 				else {
+					if (node == firstNode) {
+						if (A.x < B.x) {
+							points[1] = bottomLeft;
+							points[2].y = bottomLeft.y;
+							points.push_back(B);
+						}
+						else {
+							points[1] = bottomRight;
+							points[2].y = bottomRight.y;
+							points.push_back(B);
+						}
+						solved.insert(solved.begin() + 2, true);
+						break;
+					}
 					if (node == secondNode) {
 						if (points[pos].x < points[pos + 1].x) {
 							points[pos].y = bottomLeft.y;
@@ -136,17 +196,34 @@ std::vector<Vector2> CreateRoad(const Vector2 A, const Vector2 B, void* firstNod
 						pos = points.size() - 1;
 						break;
 					}
-					points[pos].y = intBottom.y;
-					if (points[pos].x < points[pos + 1].x) {
-						points.insert(points.begin() + pos + 1, bottomRight);
-						points.insert(points.begin() + pos + 2, { bottomRight.x, points[pos + 2].y });
+					if (points[pos].y < points[pos - 1].y) {
+						points[pos].y = intBottom.y;
+						if (points[pos].x < points[pos + 1].x) {
+							points.insert(points.begin() + pos + 1, bottomRight);
+							points.insert(points.begin() + pos + 2, { bottomRight.x, points[pos + 2].y });
+						}
+						else {
+							points.insert(points.begin() + pos + 1, bottomLeft);
+							points.insert(points.begin() + pos + 2, { bottomLeft.x, points[pos + 2].y });
+						}
+						solved.insert(solved.begin() + pos + 1, true);
+						solved.insert(solved.begin() + pos + 2, true);
 					}
 					else {
-						points.insert(points.begin() + pos + 1, bottomLeft);
-						points.insert(points.begin() + pos + 2, { bottomLeft.x, points[pos + 2].y });
+						if (points[pos].x < A.x) {
+							points[pos - 1] = intBottom;
+							points.insert(points.begin() + pos - 1, bottomRight);
+							points.insert(points.begin() + pos - 1, topRight);
+						}
+						else {
+							points[pos - 1] = intBottom;
+							points.insert(points.begin() + pos - 1, bottomLeft);
+							points.insert(points.begin() + pos - 1, topLeft);
+						}
+						solved.insert(solved.begin() + pos - 1, true);
+						solved.insert(solved.begin() + pos - 1, true);
+						pos += 2;
 					}
-					solved.insert(solved.begin() + pos + 1, true);
-					solved.insert(solved.begin() + pos + 2, true);
 				}
 				continue;
 			}
