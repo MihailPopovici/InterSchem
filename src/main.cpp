@@ -117,7 +117,6 @@ int main() {
 	Font font = LoadFont("resources/IBMPlexMono-Medium.ttf");
 	MultiLineText* console = NewMultiLineText(650, 500, 8, 32, font, 20.0f, 5.0f, WHITE, BLACK);
 	MultiLineTextOverrideLine(console, 0, "");
-	MultiLineTextSetLimitMax(console);
 	Window* consoleWin = NewWindow();
 	SetWindowColor(consoleWin, { 66, 66, 66, 255 });
 	SetWindowPosition(consoleWin, 700, 530);
@@ -176,7 +175,6 @@ int main() {
 
 	MultiLineText* code = NewMultiLineText(650, 500, 25, 32, font, 20.0f, 5.0f, WHITE, BLACK);
 	MultiLineTextOverrideLine(code, 0, "");
-	MultiLineTextSetLimitMax(code);
 	Window* codeWin = NewWindow();
 	SetWindowColor(codeWin, { 66, 66, 66, 255 });
 	SetWindowPosition(codeWin, 650, 50);
@@ -264,6 +262,7 @@ int main() {
 				selectedPin = nullptr;
 				currentNode = { nodes.startNode, start };
 				state = notExecuting;
+				ResetDictionary(variablesDictionary);
 			}
 
 			GetClickedNode(dragNode, mx, my, nodes);
@@ -391,7 +390,6 @@ int main() {
 		}
 		if (IsButtonClicked(clearConsole)) {
 			MultiLineTextClear(console);
-			MultiLineTextSetLimitMax(console);
 		}
 		if (IsButtonClicked(showCreateWindow)) {
 			WindowSetVisible(createNodesWin, true);
@@ -504,12 +502,14 @@ int main() {
 		else if (state == waitingForInput) {
 			cout << "Waiting for input\n";
 			if (IsKeyPressed(KEY_ENTER)) {
-				int x = MultiLineTextGetNextInt(console); // TODO:
-				MultiLineTextSetLimitMax(console);
-				ReadNode* p = (ReadNode*)currentNode.address;
-				auto drow = GetDictionaryRow(variablesDictionary, p->myVarName->str);
-				SetDictionaryRowValue(drow, x);
-				GetNextNodeInExecution(currentNode, state, variablesDictionary, console);
+				float x;
+				bool err = MultiLineTextGetNextInt(console, x); // TODO:
+				if (!err) {
+					ReadNode* p = (ReadNode*)currentNode.address;
+					auto drow = GetDictionaryRow(variablesDictionary, p->myVarName->str);
+					SetDictionaryRowValue(drow, x);
+					GetNextNodeInExecution(currentNode, state, variablesDictionary, console);
+				}
 			}
 		}
 		else if (state == processing) {
@@ -530,8 +530,6 @@ int main() {
 		}
 		else {
 			cout << "Done\n";
-			MultiLineTextPushString(console, "Program exited successfully\n");
-			MultiLineTextSetLimitMax(console);
 			state = notExecuting;
 			currentNode = { nodes.startNode, start };
 		}

@@ -73,12 +73,12 @@ void SetDictionaryRowKey(DictionaryRow* drow, std::string key) {
 	ReorderDictionary(drow->dict, index);
 	ResizeDictionary(drow->dict);
 }
-void SetDictionaryRowValue(DictionaryRow* drow, int value) {
+void SetDictionaryRowValue(DictionaryRow* drow, float value) {
 	int oldValWidth = MeasureText(std::to_string(drow->value).c_str(), drow->fontSize);
 	int newValWidth = MeasureText(std::to_string(value).c_str(), drow->fontSize);
 	drow->width = drow->width - oldValWidth + newValWidth;
 	drow->value = value;
-	ResizeDictionary(drow->dict);
+	ResizeDictionaryRow(drow);
 }
 void DrawDictionaryRow(DictionaryRow* drow) {
 	std::string strval = std::to_string(drow->value);
@@ -303,4 +303,11 @@ void DrawDictionary(Dictionary* dict) {
 	for (DictionaryRow* r : dict->rows) {
 		DrawDictionaryRow(r);
 	}
+}
+void ResetDictionary(Dictionary* dict) {
+	for (DictionaryRow* r : dict->rows) {
+		delete r;
+	}
+	dict->rows.clear();
+	ResizeDictionary(dict);
 }

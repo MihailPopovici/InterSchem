@@ -154,6 +154,7 @@ MultiLineText* NewMultiLineText(int startX, int startY, size_t visibleLines, siz
 	mtext->focused = false;
 
 	mtext->firstLin = mtext->firstCol = 0;
+	mtext->limLin = mtext->limCol = 0;
 	// TODO: this won t work for any font
 	mtext->x = startX;
 	mtext->y = startY;
@@ -195,6 +196,7 @@ void MultiLineTextDraw(MultiLineText* mtext) {
 	if (mtext->focused) {
 		// TODO: figure out how to calculate mtext->text width based on a given font
 		DrawLineV({ mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->lin - mtext->firstLin) * mtext->fontSize }, { mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->lin - mtext->firstLin + 1) * mtext->fontSize }, mtext->textColor);
+		DrawLineV({ mtext->x + mtext->padding + (mtext->limCol - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->limLin - mtext->firstLin) * mtext->fontSize }, { mtext->x + mtext->padding + (mtext->limCol - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->limLin - mtext->firstLin + 1) * mtext->fontSize }, RED);
 	}
 }
 std::vector<std::string> MultiLineTextParseText(MultiLineText* mtext, std::string strToParse) {
@@ -282,7 +284,7 @@ void MultiLineTextEdit(MultiLineText* mtext) {
 
 	int chr = GetCharPressed();
 	if (chr != 0) {
-		if (mtext->lin >= mtext->limLin && (mtext->lin != mtext->limLin || mtext->col >= mtext->limCol)) {
+		if (mtext->lin > mtext->limLin || (mtext->lin == mtext->limLin && mtext->col >= mtext->limCol)) {
 			mtext->text[mtext->lin].insert(mtext->col, 1, chr);
 			if (mtext->text[mtext->lin].size() >= mtext->visCol) {
 				mtext->firstCol++;
@@ -370,11 +372,55 @@ void MultiLineTextSetLimitMax(MultiLineText* mtext) {
 		mtext->firstCol = mtext->col - mtext->visCol + 1;
 	}
 }
-int MultiLineTextGetNextInt(MultiLineText* mtext) {
-	std::string str = "";
-	while (mtext->text[mtext->limLin][mtext->limCol] != ' ' && mtext->limCol < mtext->text[mtext->limLin].size()) {
-		str += mtext->text[mtext->limLin][mtext->limCol];
-		mtext->limCol++;
+bool MultiLineTextGetNextInt(MultiLineText* mtext, float& x) {
+	bool reachedEnd = false;
+	while (!isdigit(mtext->text[mtext->limLin][mtext->limCol]) && mtext->text[mtext->limLin][mtext->limCol] != '.') {
+		if (mtext->limCol == mtext->text[mtext->limLin].size() - 1) {
+			if (mtext->limLin < mtext->text.size() - 1) {
+				mtext->limLin++;
+				mtext->limCol = 0;
+			}
+			else {
+				reachedEnd = true;
+				break;
+			}
+		}
+		else {
+			mtext->limCol++;
+		}
 	}
-	return std::stoi(str);
+	if (reachedEnd && !isdigit(mtext->text[mtext->limLin][mtext->limCol])) {
+		return true;
+	}
+	std::string str = "";
+	size_t cnt = 0;
+	while (isdigit(mtext->text[mtext->limLin][mtext->limCol]) || mtext->text[mtext->limLin][mtext->limCol] == '.') {
+		str += mtext->text[mtext->limLin][mtext->limCol];
+		if (mtext->text[mtext->limLin][mtext->limCol] == '.') {
+			cnt++;
+		}
+		if (mtext->limCol == mtext->text[mtext->limLin].size() - 1) {
+			if (mtext->limLin < mtext->text.size() - 1) {
+				mtext->limLin++;
+				mtext->limCol = 0;
+			}
+			else {
+				reachedEnd = true;
+				break;
+			}
+		}
+		else {
+			mtext->limCol++;
+		}
+	}
+	if (cnt > 1) {
+		return true;
+	}
+	try {
+		x = stof(str);
+	}
+	catch (...) {
+		return true;
+	}
+	return false;
 }

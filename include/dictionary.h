@@ -22,7 +22,7 @@ struct Dictionary; // TODO: ew
 struct DictionaryRow {
 	Dictionary* dict;
 	std::string key;
-	int value;
+	float value;
 	int x, y, width, height;
 	int fontSize, padding;
 	Color bgColor, fontColor;
@@ -46,7 +46,7 @@ bool IsDictionaryRowClicked(DictionaryRow* drow);
 DictionaryRowHalf GetClickedDictionaryRowHalf(DictionaryRow* drow);
 void ResizeDictionaryRow(DictionaryRow* drow);
 void SetDictionaryRowKey(DictionaryRow* drow, std::string key);
-void SetDictionaryRowValue(DictionaryRow* drow, int value);
+void SetDictionaryRowValue(DictionaryRow* drow, float value);
 void DrawDictionaryRow(DictionaryRow* drow);
 
 Dictionary* NewDictionary();
@@ -66,3 +66,4 @@ void SetDictionaryColor(Dictionary* dict, Color bgColor);
 void ReorderDictionary(Dictionary* dict, int index);
 void ResizeDictionary(Dictionary* dict);
 void DrawDictionary(Dictionary* dict);
+void ResetDictionary(Dictionary* dict);
