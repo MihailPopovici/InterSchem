@@ -45,7 +45,7 @@ float applyOp(float val1, float val2, std::string op) {
     if (op == "*") return val1 * val2;
     if (op == "/") return val1 / val2;
     if (op == "^") return pow(val1, val2);
-    if (op == "%") return (int)val1 % (int)val2;
+    if (op == "%" && val2!=0) return (int)val1 % (int)val2;
     return -1;
 }
 float applyFunction(float val, std::string func) {

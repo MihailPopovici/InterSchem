@@ -69,7 +69,7 @@ void SetReadNodePosition(ReadNode* node, int x, int y) {
 void DrawReadNode(ReadNode* node) {
 	Vector2 v1;
 	v1.x = node->x;
-	v1.y = node->y + node->height;
+	v1.y = node->y;
 	Vector2 v2;
 	v2.x = node->x + 20;
 	v2.y = node->y + node->height;
@@ -79,10 +79,10 @@ void DrawReadNode(ReadNode* node) {
 	DrawTriangle(v1, v2, v3, YELLOW);
 	DrawRectangle(node->x + 20, node->y, node->width - 40, node->height, YELLOW);
 	v1.x = node->x + node->width - 20;
-	v1.y = node->y + node->height;
-	v2.x = node->x + node->width;
+	v1.y = node->y;
+	v2.x = node->x + node->width - 20;
 	v2.y = node->y + node->height;
-	v3.x = node->x + node->width - 20;
+	v3.x = node->x + node->width;
 	v3.y = node->y;
 	DrawTriangle(v1, v2, v3, YELLOW);
 	DrawSingleLineText(node->myVarName);
