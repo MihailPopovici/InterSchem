@@ -26,14 +26,14 @@ WriteNode* NewWriteNode(int padding, int fontSize, int x, int y) {
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
 	p->inPin.ownerPtr = p;
-	p->inPin.ownerType = write;
+	p->inPin.ownerType = NodeType_Write;
 
 	p->outPin.type = output;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
 	p->outPin.ownerPtr = p;
-	p->outPin.ownerType = write;
+	p->outPin.ownerType = NodeType_Write;
 
 	p->toPin = nullptr;
 
@@ -78,30 +78,24 @@ void DrawWriteNode(WriteNode* node) {
 	Vector2 v3;
 	v3.x = node->x + 20;
 	v3.y = node->y;
-	DrawTriangle(v1, v2, v3, BLUE);
-	DrawRectangle(node->x + 20, node->y, node->width - 40, node->height, BLUE);
+	DrawTriangle(v1, v2, v3, SKYBLUE);
+	DrawRectangle(node->x + 20, node->y, node->width - 40, node->height, SKYBLUE);
 	v1.x = node->x + node->width - 20;
 	v1.y = node->y + node->height;
 	v2.x = node->x + node->width;
 	v2.y = node->y + node->height;
 	v3.x = node->x + node->width - 20;
 	v3.y = node->y;
-	DrawTriangle(v1, v2, v3, BLUE);
+	DrawTriangle(v1, v2, v3, SKYBLUE);
 	DrawSingleLineText(node->expression);
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 	DrawLink(node->outPin, node->toPin);
 }
-int EvaluateWriteNode(WriteNode* node, Dictionary* dict) {
+float EvaluateWriteNode(WriteNode* node, Dictionary* dict) {
 	int err = 0;
-	int result = evaluate(node->expression->str, dict, err);
-	if (err != 0) {
-		// TODO: popup
-		std::cout << err << "\n";
-	}
-	else {
-		return result;
-	}
+	float result = evaluate(node->expression->str, dict, err);
+	return result;
 }
 void ResizeWriteNode(WriteNode* node) {
 	int expressionWidth = MeasureText(node->expression->str.c_str(), node->fontSize);

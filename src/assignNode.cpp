@@ -35,14 +35,14 @@ AssignNode* NewAssignNode(int padding, int fontSize, int x, int y) {
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
 	p->inPin.ownerPtr = p;
-	p->inPin.ownerType = assign;
+	p->inPin.ownerType = NodeType_Assign;
 
 	p->outPin.type = output;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
 	p->outPin.ownerPtr = p;
-	p->outPin.ownerType = assign;
+	p->outPin.ownerType = NodeType_Assign;
 
 	p->toPin = nullptr;
 

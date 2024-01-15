@@ -18,7 +18,7 @@ StartNode* NewStartNode(int padding, int fontSize, int x, int y) {
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
 	p->outPin.ownerPtr = p;
-	p->outPin.ownerType = start;
+	p->outPin.ownerType = NodeType_Start;
 
 	p->toPin = nullptr;
 

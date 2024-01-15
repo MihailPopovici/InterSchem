@@ -7,73 +7,73 @@ void GetClickedNode(AnyNodeType& clickedNode, int mx, int my, NodeArrays& nodes)
 	if (nodes.startNode != nullptr) {
 		if (mx >= nodes.startNode->x && mx <= nodes.startNode->x + nodes.startNode->width && my >= nodes.startNode->y && my <= nodes.startNode->y + nodes.startNode->height) {
 			clickedNode.address = nodes.startNode;
-			clickedNode.type = start;
+			clickedNode.type = NodeType_Start;
 			return;
 		}
 	}
 	for (unsigned i = 0; i < nodes.readNodes.size(); i++) {
 		if (mx >= nodes.readNodes[i]->x && mx <= nodes.readNodes[i]->x + nodes.readNodes[i]->width && my >= nodes.readNodes[i]->y && my <= nodes.readNodes[i]->y + nodes.readNodes[i]->height) {
 			clickedNode.address = nodes.readNodes[i];
-			clickedNode.type = read;
+			clickedNode.type = NodeType_Read;
 			return;
 		}
 	}
 	for (unsigned i = 0; i < nodes.writeNodes.size(); i++) {
 		if (mx >= nodes.writeNodes[i]->x && mx <= nodes.writeNodes[i]->x + nodes.writeNodes[i]->width && my >= nodes.writeNodes[i]->y && my <= nodes.writeNodes[i]->y + nodes.writeNodes[i]->height) {
 			clickedNode.address = nodes.writeNodes[i];
-			clickedNode.type = write;
+			clickedNode.type = NodeType_Write;
 			return;
 		}
 	}
 	for (unsigned i = 0; i < nodes.assignNodes.size(); i++) {
 		if (mx >= nodes.assignNodes[i]->x && mx <= nodes.assignNodes[i]->x + nodes.assignNodes[i]->width && my >= nodes.assignNodes[i]->y && my <= nodes.assignNodes[i]->y + nodes.assignNodes[i]->height) {
 			clickedNode.address = nodes.assignNodes[i];
-			clickedNode.type = assign;
+			clickedNode.type = NodeType_Assign;
 			return;
 		}
 	}
 	for (unsigned i = 0; i < nodes.decisionNodes.size(); i++) {
 		if (mx >= nodes.decisionNodes[i]->x && mx <= nodes.decisionNodes[i]->x + nodes.decisionNodes[i]->width && my >= nodes.decisionNodes[i]->y && my <= nodes.decisionNodes[i]->y + nodes.decisionNodes[i]->height) {
 			clickedNode.address = nodes.decisionNodes[i];
-			clickedNode.type = decision;
+			clickedNode.type = NodeType_Decision;
 			return;
 		}
 	}
 	for (unsigned i = 0; i < nodes.stopNodes.size(); i++) {
 		if (mx >= nodes.stopNodes[i]->x && mx <= nodes.stopNodes[i]->x + nodes.stopNodes[i]->width && my >= nodes.stopNodes[i]->y && my <= nodes.stopNodes[i]->y + nodes.stopNodes[i]->height) {
 			clickedNode.address = nodes.stopNodes[i];
-			clickedNode.type = stop;
+			clickedNode.type = NodeType_Stop;
 			return;
 		}
 	}
 
-	clickedNode = { nullptr, noType };
+	clickedNode = { nullptr, NodeType_NoType };
 }
 void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dictionary* dict, MultiLineText* console) {
-	if (currentNode.address == nullptr || currentNode.type == noType) {
-		state = done; // TODO: add error variant
+	if (currentNode.address == nullptr || currentNode.type == NodeType_NoType) {
+		state = ExecutionState_Done; // TODO: add error variant
 		return;
 	}
 
 	switch (currentNode.type) {
-	case start:
+	case NodeType_Start:
 		currentNode.type = ((StartNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((StartNode*)currentNode.address)->toPin->ownerPtr;
 		break;
-	case read:
+	case NodeType_Read:
 		currentNode.type = ((ReadNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((ReadNode*)currentNode.address)->toPin->ownerPtr;
 		break;
-	case write:
+	case NodeType_Write:
 		currentNode.type = ((WriteNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((WriteNode*)currentNode.address)->toPin->ownerPtr;
 		break;
-	case assign: {
+	case NodeType_Assign: {
 		currentNode.type = ((AssignNode*)currentNode.address)->toPin->ownerType;
 		currentNode.address = ((AssignNode*)currentNode.address)->toPin->ownerPtr;
 		break;
 	}
-	case decision: {
+	case NodeType_Decision: {
 		int result = EvaluateDecisionNode((DecisionNode*)currentNode.address, dict);
 
 		if (result == 0) {
@@ -89,25 +89,25 @@ void GetNextNodeInExecution(AnyNodeType& currentNode, ExecutionState& state, Dic
 		}
 		break;
 	}
-	case stop: break;
+	case NodeType_Stop: break;
 	default: break;
 	}
 
-	if (currentNode.type == read) {
-		state = waitingForInput;
+	if (currentNode.type == NodeType_Read) {
+		state = ExecutionState_WaitingForInput;
 	}
-	else if (currentNode.type == stop) {
-		state = done;
+	else if (currentNode.type == NodeType_Stop) {
+		state = ExecutionState_Done;
 	}
 	else {
-		state = processing;
+		state = ExecutionState_Processing;
 	}
 }
 void DrawSelectedNodeOptions(AnyNodeType& node, Button* del) { //TODO: asta n ar tb sa fie aici
 	int* pos = (int*)node.address;
 	int x = *pos, y = *(pos + 1), width = *(pos + 2), height = *(pos + 3);
 	
-	DrawRectangle(x - 2, y - 2, width + 4, height + 4, WHITE);
+	DrawRectangleLines(x - 2, y - 2, width + 4, height + 4, WHITE);
 
 	SetButtonPosition(del, x + width + 7, y + (height - del->height) / 2);
 	DrawButton(del);
@@ -155,23 +155,23 @@ void DragNode(AnyNodeType& node, int dx, int dy) {//TODO: asta n ar tb sa fie ai
 		return;
 	}
 	int mx = GetMouseX(), my = GetMouseY();
-	if (node.type == start) {
+	if (node.type == NodeType_Start) {
 		SetStartNodePosition((StartNode*)node.address, mx + dx, my + dy);
 		return;
 	}
-	if (node.type == read) {
+	if (node.type == NodeType_Read) {
 		SetReadNodePosition((ReadNode*)node.address, mx + dx, my + dy);
 		return;
 	}
-	if (node.type == write) {
+	if (node.type == NodeType_Write) {
 		SetWriteNodePosition((WriteNode*)node.address, mx + dx, my + dy);
 		return;
 	}
-	if (node.type == assign) {
+	if (node.type == NodeType_Assign) {
 		SetAssignNodePosition((AssignNode*)node.address, mx + dx, my + dy);
 		return;
 	}
-	if (node.type == decision) {
+	if (node.type == NodeType_Decision) {
 		SetDecisionNodePosition((DecisionNode*)node.address, mx + dx, my + dy);
 		return;
 	}
@@ -365,14 +365,14 @@ int GetBestDistToPin(NodeArrays& nodes, int x, int y) {
 	return bestDist;
 }
 void EraseNode(NodeArrays& nodes, AnyNodeType node) {
-	if (node.type == start) {
+	if (node.type == NodeType_Start) {
 		if (nodes.startNode == node.address) {
 			delete nodes.startNode;
 			nodes.startNode = nullptr;
 			return;
 		}
 	}
-	if (node.type == read) {
+	if (node.type == NodeType_Read) {
 		EraseNodeLinks(nodes, &((ReadNode*)node.address)->inPin);
 		for (unsigned i = 0; i < nodes.readNodes.size(); i++) {
 			if (nodes.readNodes[i] == node.address) {
@@ -382,7 +382,7 @@ void EraseNode(NodeArrays& nodes, AnyNodeType node) {
 			}
 		}
 	}
-	if (node.type == write) {
+	if (node.type == NodeType_Write) {
 		EraseNodeLinks(nodes, &((WriteNode*)node.address)->inPin);
 		for (unsigned i = 0; i < nodes.writeNodes.size(); i++) {
 			if (nodes.writeNodes[i] == node.address) {
@@ -392,7 +392,7 @@ void EraseNode(NodeArrays& nodes, AnyNodeType node) {
 			}
 		}
 	}
-	if (node.type == assign) {
+	if (node.type == NodeType_Assign) {
 		EraseNodeLinks(nodes, &((AssignNode*)node.address)->inPin);
 		for (unsigned i = 0; i < nodes.assignNodes.size(); i++) {
 			if (nodes.assignNodes[i] == node.address) {
@@ -402,7 +402,7 @@ void EraseNode(NodeArrays& nodes, AnyNodeType node) {
 			}
 		}
 	}
-	if (node.type == decision) {
+	if (node.type == NodeType_Decision) {
 		EraseNodeLinks(nodes, &((DecisionNode*)node.address)->inPin);
 		for (unsigned i = 0; i < nodes.decisionNodes.size(); i++) {
 			if (nodes.decisionNodes[i] == node.address) {
@@ -412,7 +412,7 @@ void EraseNode(NodeArrays& nodes, AnyNodeType node) {
 			}
 		}
 	}
-	if (node.type == stop) {
+	if (node.type == NodeType_Stop) {
 		EraseNodeLinks(nodes, &((StopNode*)node.address)->inPin);
 		for (unsigned i = 0; i < nodes.stopNodes.size(); i++) {
 			if (nodes.stopNodes[i] == node.address) {
@@ -550,79 +550,79 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 	set<void*> viz;
 	unordered_map<void*, int> dNodeLine;
 	unordered_map<void*, node*> scopes;
-	node* root = new node{ nullptr,{startNode, start} };
+	node* root = new node{ nullptr,{startNode, NodeType_Start} };
 	node* rootCopy = root;
-	q.push({ root, { startNode, start } });
+	q.push({ root, { startNode, NodeType_Start } });
 	while (!q.empty()) {
 		auto [prev, current] = q.front();
 		q.pop();
 		viz.insert(current.address);
-		if (current.type == start) {
+		if (current.type == NodeType_Start) {
 			StartNode* p = ((StartNode*)current.address);
 			q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
 		}
-		else if (current.type == write) {
+		else if (current.type == NodeType_Write) {
 			WriteNode* p = ((WriteNode*)current.address);
-			node* n = new node{ prev, { p, write } };
+			node* n = new node{ prev, { p, NodeType_Write } };
 			prev->sons.push_back(n);
 
 			auto it = viz.find(p->toPin->ownerPtr);
 			if (it == viz.end()) {
 				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
 			}
-			else if (p->toPin->ownerType == decision) {
+			else if (p->toPin->ownerType == NodeType_Decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it];
 				node* x = f(first, second);
 				n->sons.push_back(x);
 			}
 		}
-		else if (current.type == read) {
+		else if (current.type == NodeType_Read) {
 			ReadNode* p = ((ReadNode*)current.address);
-			node* n = new node{ prev, { p, read } };
+			node* n = new node{ prev, { p, NodeType_Read } };
 			prev->sons.push_back(n);
 
 			auto it = viz.find(p->toPin->ownerPtr);
 			if (it == viz.end()) {
 				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
 			}
-			else if (p->toPin->ownerType == decision) {
+			else if (p->toPin->ownerType == NodeType_Decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it];
 				node* x = f(first, second);
 				n->sons.push_back(x);
 			}
 		}
-		else if (current.type == assign) {
+		else if (current.type == NodeType_Assign) {
 			AssignNode* p = ((AssignNode*)current.address);
-			node* n = new node{ prev, { p, assign } };
+			node* n = new node{ prev, { p, NodeType_Assign } };
 			prev->sons.push_back(n);
 
 			auto it = viz.find(p->toPin->ownerPtr);
 			if (it == viz.end()) {
 				q.push({ prev, { p->toPin->ownerPtr, p->toPin->ownerType } });
 			}
-			else if (p->toPin->ownerType == decision) {
+			else if (p->toPin->ownerType == NodeType_Decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it];
 				node* x = f(first, second);
 				n->sons.push_back(x);
 			}
 		}
-		else if (current.type == decision) {
+		else if (current.type == NodeType_Decision) {
 			DecisionNode* p = ((DecisionNode*)current.address);
-			node* n = new node{ prev, {p,decision} };
+			node* n = new node{ prev, {p,NodeType_Decision} };
 			prev->sons.push_back(n);
 			scopes[current.address] = n;
-			node* n1 = new node{ n, {p,decision} };
-			node* n2 = new node{ n, {p,decision} };
+			node* n1 = new node{ n, {p,NodeType_Decision} };
+			node* n2 = new node{ n, {p,NodeType_Decision} };
 			n->sons.push_back(n1);
 			n->sons.push_back(n2);
 			auto it1 = viz.find(p->toPinTrue->ownerPtr);
 			if (it1 == viz.end()) {
 				q.push({ n1, { p->toPinTrue->ownerPtr, p->toPinTrue->ownerType } });
 			}
-			else if (p->toPinTrue->ownerType == decision) {
+			else if (p->toPinTrue->ownerType == NodeType_Decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it1];
 				node* x = f(first, second);
@@ -632,7 +632,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			if (it2 == viz.end()) {
 				q.push({ n2, { p->toPinFalse->ownerPtr, p->toPinFalse->ownerType } });
 			}
-			else if (p->toPinFalse->ownerType == decision) {
+			else if (p->toPinFalse->ownerType == NodeType_Decision) {
 				node* first = *(prev->sons.end() - 1);
 				node* second = scopes[*it2];
 				node* x = f(first, second);
@@ -673,7 +673,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 				auto it2 = find(whiles.begin(), whiles.end(), currentNode);
 				auto it3 = find(trueBranches.begin(), trueBranches.end(), currentNode);
 				auto it4 = find(falseBranches.begin(), falseBranches.end(), currentNode);
-				if (it2 == whiles.end() && it3 == trueBranches.end() && it4 == falseBranches.end() && currentNode->info.type == decision) {
+				if (it2 == whiles.end() && it3 == trueBranches.end() && it4 == falseBranches.end() && currentNode->info.type == NodeType_Decision) {
 					trueBranches.push_back(currentNode->sons[0]);
 					falseBranches.push_back(currentNode->sons[1]);
 					nodes.push({ scope,currentNode->sons[1] });
@@ -702,7 +702,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			MultiLineTextPushLine(code, text);
 			shouldClose--;
 		}
-		if (currentNode->info.type == start) {
+		if (currentNode->info.type == NodeType_Start) {
 			MultiLineTextPushString(code, "#include <iostream>");
 			MultiLineTextPushLine(code, "#include <cmath>");
 			MultiLineTextPushLine(code, "");
@@ -721,7 +721,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 				MultiLineTextPushLine(code, varDeclaration);
 			}
 		}
-		else if (currentNode->info.type == assign) {
+		else if (currentNode->info.type == NodeType_Assign) {
 			if (scope < visited[i - 1].first) {
 				string text = "";
 				for (int j = 0; j < scope; j++)
@@ -739,7 +739,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			text += ";";
 			MultiLineTextPushLine(code, text);
 		}
-		else if (currentNode->info.type == write) {
+		else if (currentNode->info.type == NodeType_Write) {
 			if (scope < visited[i - 1].first) {
 				string text = "";
 				for (int j = 0; j < scope; j++)
@@ -756,7 +756,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			text += ";";
 			MultiLineTextPushLine(code, text);
 		}
-		else if (currentNode->info.type == read) {
+		else if (currentNode->info.type == NodeType_Read) {
 			if (scope < visited[i - 1].first) {
 				string text = "";
 				for (int j = 0; j < scope; j++)
@@ -773,7 +773,7 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 			text += ";";
 			MultiLineTextPushLine(code, text);
 		}
-		else if (currentNode->info.type == decision) {
+		else if (currentNode->info.type == NodeType_Decision) {
 			if (scope < visited[i - 1].first) {
 				string text = "";
 				for (int j = 0; j < scope; j++)
@@ -856,6 +856,9 @@ void CheckForErrors(NodeArrays& nodes, Dictionary* dict, ErrorState& errState) {
 			errState = ErrorState_emptyNode;
 			return;
 		}
+		if (node->expression->str[0] == '"' && node->expression->str[node->expression->str.size() - 1] == '"') {
+			continue;
+		}
 		int err = 0;
 		float result = evaluate(node->expression->str, dict, err);
 		if (err == -1) {
@@ -892,7 +895,7 @@ void CheckForIncompleteScheme(NodeArrays& nodes, ErrorState& errState) {
 	}using namespace std;
 	queue<AnyNodeType> q;
 	vector<void*> viz;
-	q.push({ nodes.startNode, start });
+	q.push({ nodes.startNode, NodeType_Start });
 	while (!q.empty()) {
 		AnyNodeType current = q.front();
 		q.pop();
@@ -900,7 +903,7 @@ void CheckForIncompleteScheme(NodeArrays& nodes, ErrorState& errState) {
 		if (it == viz.end()) {
 			viz.push_back(current.address);
 		}
-		if (current.type == start) {
+		if (current.type == NodeType_Start) {
 			StartNode* p = ((StartNode*)current.address);
 			if (p->toPin == nullptr) {
 				errState = ErrorState_incompleteScheme;
@@ -908,7 +911,7 @@ void CheckForIncompleteScheme(NodeArrays& nodes, ErrorState& errState) {
 			}
 			q.push({ p->toPin->ownerPtr, p->toPin->ownerType });
 		}
-		else if (current.type == write) {
+		else if (current.type == NodeType_Write) {
 			WriteNode* p = ((WriteNode*)current.address);
 			if (p->toPin == nullptr) {
 				errState = ErrorState_incompleteScheme;
@@ -919,7 +922,7 @@ void CheckForIncompleteScheme(NodeArrays& nodes, ErrorState& errState) {
 				q.push({ p->toPin->ownerPtr, p->toPin->ownerType });
 			}
 		}
-		else if (current.type == read) {
+		else if (current.type == NodeType_Read) {
 			ReadNode* p = ((ReadNode*)current.address);
 			if (p->toPin == nullptr) {
 				errState = ErrorState_incompleteScheme;
@@ -930,7 +933,7 @@ void CheckForIncompleteScheme(NodeArrays& nodes, ErrorState& errState) {
 				q.push({ p->toPin->ownerPtr, p->toPin->ownerType });
 			}
 		}
-		else if (current.type == assign) {
+		else if (current.type == NodeType_Assign) {
 			AssignNode* p = ((AssignNode*)current.address);
 			if (p->toPin == nullptr) {
 				errState = ErrorState_incompleteScheme;
@@ -941,7 +944,7 @@ void CheckForIncompleteScheme(NodeArrays& nodes, ErrorState& errState) {
 				q.push({ p->toPin->ownerPtr, p->toPin->ownerType });
 			}
 		}
-		else if (current.type == decision) {
+		else if (current.type == NodeType_Decision) {
 			DecisionNode* p = ((DecisionNode*)current.address);
 			if (p->toPinTrue == nullptr) {
 				errState = ErrorState_incompleteScheme;

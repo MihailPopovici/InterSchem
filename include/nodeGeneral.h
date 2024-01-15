@@ -1,19 +1,14 @@
 #pragma once
 
 enum NodeType {
-	noType,
-	start,
-	read,
-	write,
-	assign,
-	decision,
-	stop
+	NodeType_NoType,
+	NodeType_Start,
+	NodeType_Read,
+	NodeType_Write,
+	NodeType_Assign,
+	NodeType_Decision,
+	NodeType_Stop
 };
-
-//struct NodeInfo {
-//	int id, index;
-//	NodeType type;
-//};
 
 struct AnyNodeType {
 	void* address;

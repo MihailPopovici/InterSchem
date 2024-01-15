@@ -25,21 +25,21 @@ DecisionNode* NewDecisionNode(int padding, int fontSize, int x, int y) {
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
 	p->inPin.ownerPtr = p;
-	p->inPin.ownerType = decision;
+	p->inPin.ownerType = NodeType_Decision;
 
 	p->outPinTrue.type = output;
 	p->outPinTrue.x = 0.0f;
 	p->outPinTrue.y = 0.0f;
 	p->outPinTrue.radius = PIN_RADIUS;
 	p->outPinTrue.ownerPtr = p;
-	p->outPinTrue.ownerType = decision;
+	p->outPinTrue.ownerType = NodeType_Decision;
 
 	p->outPinFalse.type = output;
 	p->outPinFalse.x = 0.0f;
 	p->outPinFalse.y = 0.0f;
 	p->outPinFalse.radius = PIN_RADIUS;
 	p->outPinFalse.ownerPtr = p;
-	p->outPinFalse.ownerType = decision;
+	p->outPinFalse.ownerType = NodeType_Decision;
 
 	p->toPinTrue = nullptr;
 	p->toPinFalse = nullptr;
@@ -100,6 +100,8 @@ void DrawDecisionNode(DecisionNode* node) {
 	DrawCircle(node->outPinFalse.x, node->outPinFalse.y, node->outPinFalse.radius, GRAY);
 	DrawLink(node->outPinTrue, node->toPinTrue);
 	DrawLink(node->outPinFalse, node->toPinFalse);
+	DrawText("T", node->outPinTrue.x - 8, node->outPinTrue.y - 24, 20, RAYWHITE);
+	DrawText("F", node->outPinFalse.x - 2, node->outPinFalse.y - 24, 20, RAYWHITE);
 }
 
 int EvaluateDecisionNode(DecisionNode* node, Dictionary* dict) {

@@ -15,7 +15,7 @@ DictionaryRow* NewDictionaryRow() {
 	p->fontColor = WHITE;
 	return p;
 }
-void SetDictionaryRowData(DictionaryRow* drow, std::string key, int value, int fontSize, int padding) {
+void SetDictionaryRowData(DictionaryRow* drow, std::string key, float value, int fontSize, int padding) {
 	drow->dict = nullptr;
 	drow->key = key;
 	drow->value = value;
@@ -172,13 +172,13 @@ int FindKeyInDictionary(Dictionary* dict, std::string key) {
 	}
 	return -1;
 }
-int GetValueFromDictionary(Dictionary* dict, int index) {
+float GetValueFromDictionary(Dictionary* dict, int index) {
 	if (index != -1) {
 		return dict->rows[index]->value;
 	}
 	return -1;
 }
-int GetValueFromDictionary(Dictionary* dict, std::string key){
+float GetValueFromDictionary(Dictionary* dict, std::string key){
 	size_t n = dict->rows.size();
 	int left = 0, right = n - 1;
 	while (left <= right) {
@@ -286,12 +286,20 @@ void ReorderDictionary(Dictionary* dict, int index) {
 	}
 }
 void ResizeDictionary(Dictionary* dict) {
+	int height = dict->padding;
 	int maxWidth = 0;
 	for (DictionaryRow* r : dict->rows) {
+		SetDictionaryRowPosition(r, r->x, dict->y + height);
+		height += r->height + dict->spacing;
 		if (r->width > maxWidth) {
 			maxWidth = r->width;
 		}
 	}
+	if (!dict->rows.empty()) {
+		height -= dict->spacing;
+	}
+	height += dict->padding;
+	dict->height = height;
 	dict->width = 2 * dict->padding + maxWidth;
 	ResizeWindow(dict->window);
 }

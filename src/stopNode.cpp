@@ -18,7 +18,7 @@ StopNode* NewStopNode(int padding, int fontSize, int x, int y) {
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
 	p->inPin.ownerPtr = p;
-	p->inPin.ownerType = stop;
+	p->inPin.ownerType = NodeType_Stop;
 
 	SetStopNodePosition(p, x, y);
 	SetStopNodeSize(p, padding, fontSize);

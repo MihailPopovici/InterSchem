@@ -49,4 +49,4 @@ bool MultiLineTextIsClicked(MultiLineText* mtext);
 void MultiLineTextClear(MultiLineText* mtext);
 void MultiLineTextSetLimit(MultiLineText* mtext, size_t limLin, size_t limCol);
 void MultiLineTextSetLimitMax(MultiLineText* mtext);
-bool MultiLineTextGetNextInt(MultiLineText* mtext, float& x);
+bool MultiLineTextGetNextNumber(MultiLineText* mtext, float& x);

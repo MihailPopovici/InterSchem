@@ -13,10 +13,10 @@
 struct Button;
 
 enum ExecutionState {
-	notExecuting, // TODO: find a better name?
-	processing,
-	waitingForInput,
-	done
+	ExecutionState_NotExecuting, 
+	ExecutionState_Processing,
+	ExecutionState_WaitingForInput,
+	ExecutionState_Done
 };
 
 void GetClickedNode(AnyNodeType& clickedNode, int mx, int my, NodeArrays& nodes);

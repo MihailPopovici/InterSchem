@@ -9,16 +9,6 @@
 #include <iostream>
 using namespace std;
 
-enum EditorState {
-	EditorStateNormal,
-	EditorStateSelectedNode,
-	EditorStateAddingNode, // TODO:
-	EditorStateEditingNode,
-	EditorStateAddingLink,
-	EditorStateEditingLink, // TODO:
-	EditorStateLinkingVariable
-};
-
 NodeArrays nodes;
 
 int main() {
@@ -27,25 +17,36 @@ int main() {
 	SetWindowState(FLAG_WINDOW_RESIZABLE);
 	SetExitKey(0);
 
-	AnyNodeType dragNode{ nullptr, noType };
-	AnyNodeType selectedNode{ nullptr, noType };
+	AnyNodeType dragNode{ nullptr, NodeType_NoType };
+	AnyNodeType selectedNode{ nullptr, NodeType_NoType };
 	Pin* selectedPin = nullptr;
 
-	EditorState editorState = EditorStateNormal;
 	ErrorState errState = ErrorState_notErroring;
 
 	Button* deleteSelectedNode = NewButton();
 	SetButtonColors(deleteSelectedNode, RED, WHITE);
 	SetButtonLabel(deleteSelectedNode, "Delete", 16, 5);
 
-	Button* exec = NewButton();
-	SetButtonColors(exec, GREEN, RAYWHITE);
-	SetButtonLabel(exec, "Execute", 20, 5);
-	SetButtonPosition(exec, windowWidth - exec->width, 0);
-	exec->visible = true;
+	Button* execFast = NewButton();
+	SetButtonColors(execFast, DARKGREEN, RAYWHITE);
+	SetButtonLabel(execFast, "Run", 20, 5);
+	SetButtonPosition(execFast, windowWidth - execFast->width, 0);
+	execFast->visible = true;
+	Button* execSlow = NewButton();
+	SetButtonColors(execSlow, { 200, 200, 0, 255 }, RAYWHITE);
+	SetButtonLabel(execSlow, "Run step-by-step", 20, 5);
+	SetButtonPosition(execSlow, execFast->x - 5 - execSlow->width, 0);
+	execSlow->visible = true;
+	Button* execStop = NewButton();
+	SetButtonColors(execStop, RED, RAYWHITE);
+	SetButtonLabel(execStop, "Stop", 20, 5);
+	SetButtonPosition(execStop, execSlow->x - 5 - execStop->width, 0);
+	execStop->visible = true;
 
-	ExecutionState state = notExecuting;
-	AnyNodeType currentNode{ nullptr, noType };
+	ExecutionState execState = ExecutionState_NotExecuting;
+	bool executeSlowly = false;
+	float timePassedSinceLastNode = 0.0f;
+	AnyNodeType currentNodeInExecution{ nullptr, NodeType_NoType };
 
 	Button* showCreateWindow = NewButton();
 	SetButtonColors(showCreateWindow, { 66,66,66,255 }, RAYWHITE);
@@ -70,34 +71,40 @@ int main() {
 
 	Button* createStartNode = NewButton();
 	SetButtonColors(createStartNode, DARKGREEN, WHITE);
-	SetButtonLabel(createStartNode, "New Start Node", 20, 5);
+	SetButtonLabel(createStartNode, "Start", 20, 5);
 	Button* createReadNode = NewButton();
-	SetButtonColors(createReadNode, YELLOW, WHITE);
-	SetButtonLabel(createReadNode, "New Read Node", 20, 5);
+	SetButtonColors(createReadNode, { 200, 200, 0, 255 }, WHITE);
+	SetButtonLabel(createReadNode, "Read", 20, 5);
 	Button* createWriteNode = NewButton();
 	SetButtonColors(createWriteNode, SKYBLUE, WHITE);
-	SetButtonLabel(createWriteNode, "New Write Node", 20, 5);
+	SetButtonLabel(createWriteNode, "Write", 20, 5);
 	Button* createAssignNode = NewButton();
 	SetButtonColors(createAssignNode, ORANGE, WHITE);
-	SetButtonLabel(createAssignNode, "New Assign Node", 20, 5);
+	SetButtonLabel(createAssignNode, "Assign", 20, 5);
 	Button* createDecisionNode = NewButton();
 	SetButtonColors(createDecisionNode, PURPLE, WHITE);
-	SetButtonLabel(createDecisionNode, "New Decision Node", 20, 5);
+	SetButtonLabel(createDecisionNode, "Decision", 20, 5);
 	Button* createStopNode = NewButton();
 	SetButtonColors(createStopNode, RED, WHITE);
-	SetButtonLabel(createStopNode, "New Stop Node", 20, 5);
+	SetButtonLabel(createStopNode, "Stop", 20, 5);
+	Grid* newNodesGrid = NewGrid();
+	SetGridSize(newNodesGrid, 2);
+	SetGridColor(newNodesGrid, BLANK);
+	SetGridPadding(newNodesGrid, 5);
+	SetGridSpacing(newNodesGrid, 5);
+	GridAddElement(newNodesGrid, createStartNode);
+	GridAddElement(newNodesGrid, createReadNode);
+	GridAddElement(newNodesGrid, createWriteNode);
+	GridAddElement(newNodesGrid, createDecisionNode);
+	GridAddElement(newNodesGrid, createAssignNode);
+	GridAddElement(newNodesGrid, createStopNode);
 	Window* createNodesWin = NewWindow();
 	SetWindowColor(createNodesWin, { 66, 66, 66, 255 });
 	SetWindowPosition(createNodesWin, 5, 100);
 	SetWindowSpacing(createNodesWin, 5);
 	SetWindowPadding(createNodesWin, 5);
 	SetWindowTitle(createNodesWin, "New nodes", 32, WHITE);
-	AddElementToWindow(createNodesWin, { createStartNode, WindowElementType_Button });
-	AddElementToWindow(createNodesWin, { createReadNode, WindowElementType_Button });
-	AddElementToWindow(createNodesWin, { createWriteNode, WindowElementType_Button });
-	AddElementToWindow(createNodesWin, { createAssignNode, WindowElementType_Button });
-	AddElementToWindow(createNodesWin, { createDecisionNode, WindowElementType_Button });
-	AddElementToWindow(createNodesWin, { createStopNode, WindowElementType_Button });
+	AddElementToWindow(createNodesWin, { newNodesGrid, WindowElementType_Grid });
 	createNodesWin->visible = false;
 
 	Dictionary* variablesDictionary = NewDictionary();
@@ -194,6 +201,10 @@ int main() {
 	int dx = 0, dy = 0;
 	SetTargetFPS(90);
 	while (!WindowShouldClose()) {
+		if (executeSlowly) {
+			timePassedSinceLastNode += GetFrameTime();
+		}
+
 		if (IsWindowResized()) {
 			int nwidth = GetScreenWidth(), nheight = GetScreenHeight();
 			float ratioX, ratioY;
@@ -201,7 +212,9 @@ int main() {
 			ratioY = (float)windowHeight / consoleWin->y;
 			SetWindowPosition(consoleWin, (int)(nwidth / ratioX), (int)(nheight / ratioY));
 			// TODO: get rid of this above?
-			SetButtonPosition(exec, nwidth - exec->width, 0);
+			SetButtonPosition(execFast, nwidth - execFast->width, 0);
+			SetButtonPosition(execSlow, execFast->x - 5 - execSlow->width, 0);
+			SetButtonPosition(execStop, execSlow->x - 5 - execStop->width, 0);
 		}
 
 		if (popup) {
@@ -258,15 +271,15 @@ int main() {
 				currentFilePath = path;
 				writeFileName->str = filename;
 				ResizeSingleLineText(writeFileName);
-				dragNode = selectedNode = { nullptr, noType };
+				dragNode = selectedNode = { nullptr, NodeType_NoType };
 				selectedPin = nullptr;
-				currentNode = { nodes.startNode, start };
-				state = notExecuting;
+				currentNodeInExecution = { nodes.startNode, NodeType_Start };
+				execState = ExecutionState_NotExecuting;
 				ResetDictionary(variablesDictionary);
 			}
 
 			GetClickedNode(dragNode, mx, my, nodes);
-			if (dragNode.type != noType && dragNode.address != nullptr) {
+			if (dragNode.type != NodeType_NoType && dragNode.address != nullptr) {
 				int* pos = (int*)dragNode.address;
 				dx = *pos, dy = *(pos + 1);
 				dx -= mx, dy -= my;
@@ -278,8 +291,8 @@ int main() {
 				selectedPin = secondPin;
 				if (selectedPin != nullptr) {
 					switch (selectedPin->ownerType) {
-					case start: ((StartNode*)selectedPin->ownerPtr)->toPin = nullptr; break;
-					case decision: {
+					case NodeType_Start: ((StartNode*)selectedPin->ownerPtr)->toPin = nullptr; break;
+					case NodeType_Decision: {
 						DecisionNode* d = (DecisionNode*)selectedPin->ownerPtr;
 						if (selectedPin == &d->outPinTrue) {
 							d->toPinTrue = nullptr;
@@ -296,11 +309,11 @@ int main() {
 			}
 			else if (selectedPin != nullptr && secondPin != nullptr && secondPin->type == input) {
 				switch (selectedPin->ownerType) {
-				case start: NewLink(((StartNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
-				case read: NewLink(((ReadNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
-				case write: NewLink(((WriteNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
-				case assign: NewLink(((AssignNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
-				case decision:
+				case NodeType_Start: NewLink(((StartNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
+				case NodeType_Read: NewLink(((ReadNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
+				case NodeType_Write: NewLink(((WriteNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
+				case NodeType_Assign: NewLink(((AssignNode*)selectedPin->ownerPtr)->toPin, *secondPin); break;
+				case NodeType_Decision:
 					if (selectedPin == &((DecisionNode*)selectedPin->ownerPtr)->outPinTrue)
 						NewLink(((DecisionNode*)selectedPin->ownerPtr)->toPinTrue, *secondPin);
 					else
@@ -318,7 +331,7 @@ int main() {
 			DragNode(dragNode, dx, dy);
 		}
 		else if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
-			dragNode = { nullptr, noType }; // TODO: performance?
+			dragNode = { nullptr, NodeType_NoType }; // TODO: performance?
 		}
 
 		if (IsMouseButtonPressed(MOUSE_BUTTON_RIGHT)) {
@@ -333,60 +346,79 @@ int main() {
 
 		if (IsButtonClicked(deleteSelectedNode)) {
 			EraseNode(nodes, selectedNode);
-			selectedNode = { nullptr, noType };
+			selectedNode = { nullptr, NodeType_NoType };
 		}
 
-		if (IsButtonClicked(exec)) {
-			errState = ErrorState_notErroring;
-			CheckForIncompleteScheme(nodes, errState);
-			if (errState == ErrorState_incompleteScheme) {
-				popup = true;
-				popupMsg = "Incomplete Scheme";
-				continue;
+		if (IsButtonClicked(execStop)) {
+			cout << "Stopped\n";
+			execState = ExecutionState_NotExecuting;
+			currentNodeInExecution = { nodes.startNode, NodeType_Start };
+			executeSlowly = false;
+			timePassedSinceLastNode = 0.0f;
+		}
+		if (IsButtonClicked(execSlow)) {
+			executeSlowly = true;
+			goto begin_execution;
+		}
+		if (IsButtonClicked(execFast)) {
+			if (executeSlowly) {
+				executeSlowly = false;
 			}
-			errState = ErrorState_notErroring;
-			CheckForErrors(nodes, variablesDictionary, errState);
-			if (errState == ErrorState_incorrectVarName) {
-				popup = true;
-				popupMsg = "Incorrect Variable Name";
-				continue;
+			else {
+			begin_execution:
+				cout << "Started\n";
+				timePassedSinceLastNode = 0.0f;
+				errState = ErrorState_notErroring;
+				CheckForIncompleteScheme(nodes, errState);
+				if (errState == ErrorState_incompleteScheme) {
+					popup = true;
+					popupMsg = "Incomplete Scheme";
+					continue;
+				}
+				errState = ErrorState_notErroring;
+				CheckForErrors(nodes, variablesDictionary, errState);
+				if (errState == ErrorState_incorrectVarName) {
+					popup = true;
+					popupMsg = "Incorrect Variable Name";
+					continue;
+				}
+				else if (errState == ErrorState_incorrectMathExpression) {
+					popup = true;
+					popupMsg = "Incorrect Mathematical Expression";
+					continue;
+				}
+				else if (errState == ErrorState_incorrectLogicalExpression) {
+					popup = true;
+					popupMsg = "Incorrect Logical Expression";
+					continue;
+				}
+				else if (errState == ErrorState_emptyNode) {
+					popup = true;
+					popupMsg = "Empty Node";
+					continue;
+				}
+				MultiLineTextClear(console);
+				UpdateVariablesTable(nodes, variablesDictionary);
+				GetNextNodeInExecution(currentNodeInExecution, execState, variablesDictionary, console);
 			}
-			else if (errState == ErrorState_incorrectMathExpression) {
-				popup = true;
-				popupMsg = "Incorrect Mathematical Expression";
-				continue;
-			}
-			else if (errState == ErrorState_incorrectLogicalExpression) {
-				popup = true;
-				popupMsg = "Incorrect Logical Expression";
-				continue;
-			}
-			else if (errState == ErrorState_emptyNode) {
-				popup = true;
-				popupMsg = "Empty Node";
-				continue;
-			}
-			MultiLineTextClear(console);
-			UpdateVariablesTable(nodes, variablesDictionary);
-			GetNextNodeInExecution(currentNode, state, variablesDictionary, console);
 		}
 		if (IsButtonClicked(createStartNode)) {
-			currentNode = dragNode = NewNode(nodes, start, 15, 20, mx, my);
+			currentNodeInExecution = dragNode = NewNode(nodes, NodeType_Start, 15, 20, mx, my);
 		}
 		if (IsButtonClicked(createReadNode)) {
-			dragNode = NewNode(nodes, read, 20, 20, mx, my);
+			dragNode = NewNode(nodes, NodeType_Read, 20, 20, mx, my);
 		}
 		if (IsButtonClicked(createWriteNode)) {
-			dragNode = NewNode(nodes, write, 20, 20, mx, my);
+			dragNode = NewNode(nodes, NodeType_Write, 20, 20, mx, my);
 		}
 		if (IsButtonClicked(createAssignNode)) {
-			dragNode = NewNode(nodes, assign, 10, 20, mx, my);
+			dragNode = NewNode(nodes, NodeType_Assign, 10, 20, mx, my);
 		}
 		if (IsButtonClicked(createDecisionNode)) {
-			dragNode = NewNode(nodes, decision, 25, 20, mx, my);
+			dragNode = NewNode(nodes, NodeType_Decision, 25, 20, mx, my);
 		}
 		if (IsButtonClicked(createStopNode)) {
-			dragNode = NewNode(nodes, stop, 15, 20, mx, my);
+			dragNode = NewNode(nodes, NodeType_Stop, 15, 20, mx, my);
 		}
 		if (IsButtonClicked(clearConsole)) {
 			MultiLineTextClear(console);
@@ -475,7 +507,7 @@ int main() {
 				}
 				else {
 					popup = true;
-					popupMsg = "Invalid file name";
+					popupMsg = "Invalid file name or file name already exists";
 					continue;
 				}
 			}
@@ -488,50 +520,73 @@ int main() {
 			currentFilePath.clear();
 			writeFileName->str.clear();
 			ResizeSingleLineText(writeFileName);
-			dragNode = selectedNode = { nullptr, noType };
+			dragNode = selectedNode = { nullptr, NodeType_NoType };
 			selectedPin = nullptr;
-			currentNode = { nodes.startNode, start };
-			state = notExecuting;
+			currentNodeInExecution = { nodes.startNode, NodeType_Start };
+			execState = ExecutionState_NotExecuting;
 		}
 		
 		MultiLineTextEdit(console);
 		MultiLineTextEdit(code);
-		if (state == notExecuting) {
+
+		if (execState == ExecutionState_NotExecuting) {
 
 		}
-		else if (state == waitingForInput) {
+		else if (execState == ExecutionState_WaitingForInput) {
 			cout << "Waiting for input\n";
 			if (IsKeyPressed(KEY_ENTER)) {
 				float x;
-				bool err = MultiLineTextGetNextInt(console, x); // TODO:
+				bool err = MultiLineTextGetNextNumber(console, x); // TODO:
 				if (!err) {
-					ReadNode* p = (ReadNode*)currentNode.address;
+					ReadNode* p = (ReadNode*)currentNodeInExecution.address;
 					auto drow = GetDictionaryRow(variablesDictionary, p->myVarName->str);
 					SetDictionaryRowValue(drow, x);
-					GetNextNodeInExecution(currentNode, state, variablesDictionary, console);
+					GetNextNodeInExecution(currentNodeInExecution, execState, variablesDictionary, console);
+					timePassedSinceLastNode = 0.0f;
 				}
 			}
 		}
-		else if (state == processing) {
+		else if ((execState == ExecutionState_Processing && !executeSlowly) || (executeSlowly && timePassedSinceLastNode >= 1.0f)) {
 			cout << "Processing\n";
-			/*if (currentNode.type == read) {
+			/*if (currentNodeInExecution.type == read) {
 				MultiLineTextPushString(console, "Input value:");
 				MultiLineTextSetLimitMax(console);
 			}
-			else */if (currentNode.type == assign) {
-				EvaluateAssignNode((AssignNode*)currentNode.address, variablesDictionary);
+			else */if (currentNodeInExecution.type == NodeType_Assign) {
+				EvaluateAssignNode((AssignNode*)currentNodeInExecution.address, variablesDictionary);
 			}
-			else if (currentNode.type == write) {
-				string writeNodeString = to_string(EvaluateWriteNode((WriteNode*)currentNode.address, variablesDictionary));
-				MultiLineTextPushString(console, writeNodeString);
+			else if (currentNodeInExecution.type == NodeType_Write) {
+				WriteNode* p = (WriteNode*)currentNodeInExecution.address;
+				string writeNodeString;
+				if (p->expression->str[0] == '"' && p->expression->str[p->expression->str.size() - 1] == '"') {
+					writeNodeString = p->expression->str.substr(1, p->expression->str.size() - 2);
+					size_t lastPos = 0;
+					size_t pos = writeNodeString.find_first_of('\\', lastPos);
+					while (pos != std::string::npos) {
+						if (pos < writeNodeString.size()) {
+							if (writeNodeString[pos + 1] == 'n') {
+								writeNodeString.erase(pos, 2);
+								writeNodeString.insert(pos, 1, '\n');
+							}
+						}
+						lastPos = pos;
+						pos = writeNodeString.find_first_of('\\', lastPos);
+					}
+				}
+				else {
+					writeNodeString = to_string(EvaluateWriteNode(p, variablesDictionary));
+				}
+				MultiLineTextPushString(console, writeNodeString + "\n");
 				MultiLineTextSetLimitMax(console);
 			}
-			GetNextNodeInExecution(currentNode, state, variablesDictionary, console);
-		}
-		else {
-			cout << "Done\n";
-			state = notExecuting;
-			currentNode = { nodes.startNode, start };
+			GetNextNodeInExecution(currentNodeInExecution, execState, variablesDictionary, console);
+			timePassedSinceLastNode = 0.0f;
+			if (execState == ExecutionState_Done) {
+				cout << "Done\n";
+				executeSlowly = false;
+				execState = ExecutionState_NotExecuting;
+				currentNodeInExecution = { nodes.startNode, NodeType_Start };
+			}
 		}
 
 		windowWidth = GetScreenWidth(), windowHeight = GetScreenHeight();
@@ -558,9 +613,16 @@ int main() {
 			DrawSelectedNodeOptions(selectedNode, deleteSelectedNode);
 		}
 
+		if ((execState == ExecutionState_Processing || execState == ExecutionState_WaitingForInput) && executeSlowly) {
+			int* pos = (int*)currentNodeInExecution.address;
+			int x = *pos, y = *(pos + 1), width = *(pos + 2), height = *(pos + 3);
+			DrawRectangleLines(x - 2, y - 2, width + 4, height + 4, GREEN);
+		}
 		DrawNodes(nodes);
 
-		DrawButton(exec);
+		DrawButton(execFast);
+		DrawButton(execSlow);
+		DrawButton(execStop);
 
 		EndDrawing();
 	}

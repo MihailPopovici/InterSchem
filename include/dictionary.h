@@ -38,7 +38,7 @@ struct Dictionary {
 };
 
 DictionaryRow* NewDictionaryRow();
-void SetDictionaryRowData(DictionaryRow* drow, std::string key, int value, int fontSize, int padding);
+void SetDictionaryRowData(DictionaryRow* drow, std::string key, float value, int fontSize, int padding);
 void SetDictionaryRowPosition(DictionaryRow* drow, int x, int y);
 void SetDictionaryRowColors(DictionaryRow* drow, Color bgColor, Color fontColor);
 bool IsDictionaryRowHovered(DictionaryRow* drow);
@@ -53,8 +53,8 @@ Dictionary* NewDictionary();
 void SetDictionaryPosition(Dictionary* dict, int x, int y);
 int AddDictionaryRow(Dictionary* dict, DictionaryRow* drow);
 int FindKeyInDictionary(Dictionary* dict, std::string key);
-int GetValueFromDictionary(Dictionary* dict, int index);
-int GetValueFromDictionary(Dictionary* dict, std::string key);
+float GetValueFromDictionary(Dictionary* dict, int index);
+float GetValueFromDictionary(Dictionary* dict, std::string key);
 bool IsDictionaryHovered(Dictionary* dict);
 bool IsDictionaryClicked(Dictionary* dict);
 bool IsDictionaryRowClicked(Dictionary* dict);

@@ -1,45 +1,45 @@
 #include "nodeComponents.h"
 
 AnyNodeType NewNode(NodeArrays& nodes, NodeType type, int padding, int fontSize, float x, float y) {
-	AnyNodeType res = { nullptr, noType };
-	if (type == start) {
+	AnyNodeType res = { nullptr, NodeType_NoType };
+	if (type == NodeType_Start) {
 		res.address = nodes.startNode = NewStartNode(padding, fontSize, x, y);
-		res.type = start;
+		res.type = NodeType_Start;
 		return res;
 	}
-	if(type == stop) {
+	if(type == NodeType_Stop) {
 		StopNode* s = NewStopNode(padding, fontSize, x, y);
 		nodes.stopNodes.push_back(s);
 		res.address = s;
-		res.type = stop;
+		res.type = NodeType_Stop;
 		return res;
 	}
-	if(type == read) {
+	if(type == NodeType_Read) {
 		ReadNode* r = NewReadNode(padding, fontSize, x, y);
 		nodes.readNodes.push_back(r);
 		res.address = r;
-		res.type = read;
+		res.type = NodeType_Read;
 		return res;
 	}
-	if (type == write)	{
+	if (type == NodeType_Write)	{
 		WriteNode* w = NewWriteNode(padding, fontSize, x, y);
 		nodes.writeNodes.push_back(w);
 		res.address = w;
-		res.type = write;
+		res.type = NodeType_Write;
 		return res;
 	}
-	if (type == assign) {
+	if (type == NodeType_Assign) {
 		AssignNode* a = NewAssignNode(padding, fontSize, x, y);
 		nodes.assignNodes.push_back(a);
 		res.address = a;
-		res.type = assign;
+		res.type = NodeType_Assign;
 		return res;
 	}
-	if (type == decision) {
+	if (type == NodeType_Decision) {
 		DecisionNode* d = NewDecisionNode(padding, fontSize, x, y);
 		nodes.decisionNodes.push_back(d);
 		res.address = d;
-		res.type = decision;
+		res.type = NodeType_Decision;
 		return res;
 	}
 	return res;

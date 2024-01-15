@@ -166,7 +166,7 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 	void* node = nullptr;
 	file.read((char*)(&node), sizeof(StartNode*));
 	if (node != nullptr) {
-		auto newNode = NewNode(nodes, start, 5, 20, 100, 100);
+		auto newNode = NewNode(nodes, NodeType_Start, 5, 20, 100, 100);
 		oldToNew[node] = newNode;
 		file.read((char*)(newNode.address), sizeof(StartNode) - sizeof(Pin*));
 		StartNode* p = (StartNode*)newNode.address;
@@ -182,7 +182,7 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 	file.read((char*)(&n), sizeof(size_t));
 	for (size_t i = 1; i <= n; i++) {
 		file.read((char*)(&node), sizeof(ReadNode*));
-		auto newNode = NewNode(nodes, read, 5, 20, 100, 100);
+		auto newNode = NewNode(nodes, NodeType_Read, 5, 20, 100, 100);
 		ReadNode* p = (ReadNode*)newNode.address;
 		oldToNew[node] = newNode;
 		nodesInPin[node] = &p->inPin;
@@ -210,7 +210,7 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 	file.read((char*)(&n), sizeof(size_t));
 	for (size_t i = 1; i <= n; i++) {
 		file.read((char*)(&node), sizeof(WriteNode*));
-		auto newNode = NewNode(nodes, write, 5, 20, 100, 100);
+		auto newNode = NewNode(nodes, NodeType_Write, 5, 20, 100, 100);
 		WriteNode* p = (WriteNode*)newNode.address;
 		oldToNew[node] = newNode;
 		nodesInPin[node] = &p->inPin;
@@ -238,7 +238,7 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 	file.read((char*)(&n), sizeof(size_t));
 	for (size_t i = 1; i <= n; i++) {
 		file.read((char*)(&node), sizeof(AssignNode*));
-		auto newNode = NewNode(nodes, assign, 5, 20, 100, 100);
+		auto newNode = NewNode(nodes, NodeType_Assign, 5, 20, 100, 100);
 		AssignNode* p = (AssignNode*)newNode.address;
 		oldToNew[node] = newNode;
 		nodesInPin[node] = &p->inPin;
@@ -276,7 +276,7 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 	file.read((char*)(&n), sizeof(size_t));
 	for (size_t i = 1; i <= n; i++) {
 		file.read((char*)(&node), sizeof(DecisionNode*));
-		auto newNode = NewNode(nodes, decision, 5, 20, 100, 100);
+		auto newNode = NewNode(nodes, NodeType_Decision, 5, 20, 100, 100);
 		DecisionNode* p = (DecisionNode*)newNode.address;
 		oldToNew[node] = newNode;
 		nodesInPin[node] = &p->inPin;
@@ -309,7 +309,7 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 	file.read((char*)(&n), sizeof(size_t));
 	for (size_t i = 1; i <= n; i++) {
 		file.read((char*)(&node), sizeof(StopNode*));
-		auto newNode = NewNode(nodes, stop, 5, 20, 100, 100);
+		auto newNode = NewNode(nodes, NodeType_Stop, 5, 20, 100, 100);
 		StopNode* p = (StopNode*)newNode.address;
 		oldToNew[node] = newNode;
 		nodesInPin[node] = &p->inPin;
@@ -321,16 +321,16 @@ bool LoadSchemeFromFile(NodeArrays& nodes, std::string path) {
 		AnyNodeType* from = &oldToNew[link.first];
 		AnyNodeType* to = &oldToNew[link.second];
 		Pin* toPin = nodesInPin[link.second];
-		if (from->type == start) {
+		if (from->type == NodeType_Start) {
 			NewLink(((StartNode*)from->address)->toPin, *toPin);
 		}
-		else if (from->type == read) {
+		else if (from->type == NodeType_Read) {
 			NewLink(((ReadNode*)from->address)->toPin, *toPin);
 		}
-		else if (from->type == write) {
+		else if (from->type == NodeType_Write) {
 			NewLink(((WriteNode*)from->address)->toPin, *toPin);
 		}
-		else if (from->type == assign) {
+		else if (from->type == NodeType_Assign) {
 			NewLink(((AssignNode*)from->address)->toPin, *toPin);
 		}
 		else {

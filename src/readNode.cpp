@@ -26,14 +26,14 @@ ReadNode* NewReadNode(int padding, int fontSize, int x, int y) {
 	p->inPin.y = 0.0f;
 	p->inPin.radius = PIN_RADIUS;
 	p->inPin.ownerPtr = p;
-	p->inPin.ownerType = read;
+	p->inPin.ownerType = NodeType_Read;
 
 	p->outPin.type = output;
 	p->outPin.x = 0.0f;
 	p->outPin.y = 0.0f;
 	p->outPin.radius = PIN_RADIUS;
 	p->outPin.ownerPtr = p;
-	p->outPin.ownerType = read;
+	p->outPin.ownerType = NodeType_Read;
 
 	p->toPin = nullptr;
 
@@ -76,15 +76,15 @@ void DrawReadNode(ReadNode* node) {
 	Vector2 v3;
 	v3.x = node->x + 20;
 	v3.y = node->y;
-	DrawTriangle(v1, v2, v3, YELLOW);
-	DrawRectangle(node->x + 20, node->y, node->width - 40, node->height, YELLOW);
+	DrawTriangle(v1, v2, v3, { 200, 200, 0, 255 });
+	DrawRectangle(node->x + 20, node->y, node->width - 40, node->height, { 200, 200, 0, 255 });
 	v1.x = node->x + node->width - 20;
 	v1.y = node->y;
 	v2.x = node->x + node->width - 20;
 	v2.y = node->y + node->height;
 	v3.x = node->x + node->width;
 	v3.y = node->y;
-	DrawTriangle(v1, v2, v3, YELLOW);
+	DrawTriangle(v1, v2, v3, { 200, 200, 0, 255 });
 	DrawSingleLineText(node->myVarName);
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);

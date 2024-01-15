@@ -372,7 +372,7 @@ void MultiLineTextSetLimitMax(MultiLineText* mtext) {
 		mtext->firstCol = mtext->col - mtext->visCol + 1;
 	}
 }
-bool MultiLineTextGetNextInt(MultiLineText* mtext, float& x) {
+bool MultiLineTextGetNextNumber(MultiLineText* mtext, float& x) {
 	bool reachedEnd = false;
 	while (!isdigit(mtext->text[mtext->limLin][mtext->limCol]) && mtext->text[mtext->limLin][mtext->limCol] != '.') {
 		if (mtext->limCol == mtext->text[mtext->limLin].size() - 1) {
@@ -416,6 +416,7 @@ bool MultiLineTextGetNextInt(MultiLineText* mtext, float& x) {
 	if (cnt > 1) {
 		return true;
 	}
+
 	try {
 		x = stof(str);
 	}
