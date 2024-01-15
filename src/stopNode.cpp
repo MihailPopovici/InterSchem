@@ -42,7 +42,12 @@ void SetStopNodePosition(StopNode* node, int x, int y) {
 	node->inPin.y = node->y;
 }
 void DrawStopNode(StopNode* node) {
-	DrawRectangle(node->x, node->y, node->width, node->height, RED);
+	Rectangle rec;
+	rec.x = node->x;
+	rec.y = node->y;
+	rec.width = node->width;
+	rec.height = node->height;
+	DrawRectangleRounded(rec, 1, 16, RED);
 	DrawText("Stop", node->x + node->padding, node->y + node->padding, node->fontSize, WHITE);
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 }

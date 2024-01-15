@@ -80,7 +80,20 @@ void SetDecisionNodePosition(DecisionNode* node, int x, int y) {
 	SetSingleLineTextPosition(node->expression, node->x + node->padding, node->y + node->padding);
 }
 void DrawDecisionNode(DecisionNode* node) {
-	DrawRectangle(node->x, node->y, node->width, node->height, PURPLE);
+	Vector2 v1;
+	v1.x = node->x + node->width / 2;
+	v1.y = node->y;
+	Vector2 v2;
+	v2.x = node->x + node->width / 2;
+	v2.y = node->y + node->height;
+	Vector2 v3;
+	v3.x = node->x;
+	v3.y = node->y + node->height / 2;
+	DrawTriangle(v3, v2, v1, PURPLE);
+	v3 = v2;
+	v2.x = node->x + node->width;
+	v2.y = node->y + node->height / 2;
+	DrawTriangle(v3, v2, v1, PURPLE);
 	DrawSingleLineText(node->expression);
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 	DrawCircle(node->outPinTrue.x, node->outPinTrue.y, node->outPinTrue.radius, GRAY);

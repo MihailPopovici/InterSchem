@@ -4,6 +4,7 @@
 #include "uiComponents.h"
 #include "execFunc.h"
 #include "fileFunc.h"
+#include "error.h"
 
 #include <iostream>
 using namespace std;
@@ -31,6 +32,7 @@ int main() {
 	Pin* selectedPin = nullptr;
 
 	EditorState editorState = EditorStateNormal;
+	ErrorState errState = ErrorState_notErroring;
 
 	Button* deleteSelectedNode = NewButton();
 	SetButtonColors(deleteSelectedNode, RED, WHITE);
@@ -336,27 +338,56 @@ int main() {
 		}
 
 		if (IsButtonClicked(exec)) {
+			errState = ErrorState_notErroring;
+			CheckForIncompleteScheme(nodes, errState);
+			if (errState == ErrorState_incompleteScheme) {
+				popup = true;
+				popupMsg = "Incomplete Scheme";
+				continue;
+			}
+			errState = ErrorState_notErroring;
+			CheckForErrors(nodes, variablesDictionary, errState);
+			if (errState == ErrorState_incorrectVarName) {
+				popup = true;
+				popupMsg = "Incorrect Variable Name";
+				continue;
+			}
+			else if (errState == ErrorState_incorrectMathExpression) {
+				popup = true;
+				popupMsg = "Incorrect Mathematical Expression";
+				continue;
+			}
+			else if (errState == ErrorState_incorrectLogicalExpression) {
+				popup = true;
+				popupMsg = "Incorrect Logical Expression";
+				continue;
+			}
+			else if (errState == ErrorState_emptyNode) {
+				popup = true;
+				popupMsg = "Empty Node";
+				continue;
+			}
 			MultiLineTextClear(console);
 			UpdateVariablesTable(nodes, variablesDictionary);
 			GetNextNodeInExecution(currentNode, state, variablesDictionary, console);
 		}
 		if (IsButtonClicked(createStartNode)) {
-			currentNode = dragNode = NewNode(nodes, start, 5, 20, mx, my);
+			currentNode = dragNode = NewNode(nodes, start, 15, 20, mx, my);
 		}
 		if (IsButtonClicked(createReadNode)) {
-			dragNode = NewNode(nodes, read, 5, 20, mx, my);
+			dragNode = NewNode(nodes, read, 20, 20, mx, my);
 		}
 		if (IsButtonClicked(createWriteNode)) {
-			dragNode = NewNode(nodes, write, 5, 20, mx, my);
+			dragNode = NewNode(nodes, write, 20, 20, mx, my);
 		}
 		if (IsButtonClicked(createAssignNode)) {
-			dragNode = NewNode(nodes, assign, 5, 20, mx, my);
+			dragNode = NewNode(nodes, assign, 10, 20, mx, my);
 		}
 		if (IsButtonClicked(createDecisionNode)) {
-			dragNode = NewNode(nodes, decision, 5, 20, mx, my);
+			dragNode = NewNode(nodes, decision, 25, 20, mx, my);
 		}
 		if (IsButtonClicked(createStopNode)) {
-			dragNode = NewNode(nodes, stop, 5, 20, mx, my);
+			dragNode = NewNode(nodes, stop, 15, 20, mx, my);
 		}
 		if (IsButtonClicked(clearConsole)) {
 			MultiLineTextClear(console);
@@ -383,6 +414,35 @@ int main() {
 			showCodeWindow->visible = false;
 		}
 		if (IsButtonClicked(translate)) {
+			errState = ErrorState_notErroring;
+			CheckForIncompleteScheme(nodes, errState);
+			if (errState == ErrorState_incompleteScheme) {
+				popup = true;
+				popupMsg = "Incomplete Scheme";
+				continue;
+			}
+			errState = ErrorState_notErroring;
+			CheckForErrors(nodes, variablesDictionary, errState);
+			if (errState == ErrorState_incorrectVarName) {
+				popup = true;
+				popupMsg = "Incorrect Variable Name";
+				continue;
+			}
+			else if (errState == ErrorState_incorrectMathExpression) {
+				popup = true;
+				popupMsg = "Incorrect Mathematical Expression";
+				continue;
+			}
+			else if (errState == ErrorState_incorrectLogicalExpression) {
+				popup = true;
+				popupMsg = "Incorrect Logical Expression";
+				continue;
+			}
+			else if (errState == ErrorState_emptyNode) {
+				popup = true;
+				popupMsg = "Empty Node";
+				continue;
+			}
 			MultiLineTextClear(code);
 			UpdateVariablesTable(nodes, variablesDictionary);
 			EncodeScheme(code, variablesDictionary, nodes.startNode);

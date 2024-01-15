@@ -67,7 +67,24 @@ void SetReadNodePosition(ReadNode* node, int x, int y) {
 	SetSingleLineTextPosition(node->myVarName, node->x + node->padding, node->y + node->padding);
 }
 void DrawReadNode(ReadNode* node) {
-	DrawRectangle(node->x, node->y, node->width, node->height, YELLOW);
+	Vector2 v1;
+	v1.x = node->x;
+	v1.y = node->y + node->height;
+	Vector2 v2;
+	v2.x = node->x + 20;
+	v2.y = node->y + node->height;
+	Vector2 v3;
+	v3.x = node->x + 20;
+	v3.y = node->y;
+	DrawTriangle(v1, v2, v3, YELLOW);
+	DrawRectangle(node->x + 20, node->y, node->width - 40, node->height, YELLOW);
+	v1.x = node->x + node->width - 20;
+	v1.y = node->y + node->height;
+	v2.x = node->x + node->width;
+	v2.y = node->y + node->height;
+	v3.x = node->x + node->width - 20;
+	v3.y = node->y;
+	DrawTriangle(v1, v2, v3, YELLOW);
 	DrawSingleLineText(node->myVarName);
 	DrawCircle(node->inPin.x, node->inPin.y, node->inPin.radius, GRAY);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);

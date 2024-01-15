@@ -822,3 +822,147 @@ void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode) {
 	MultiLineTextPushLine(code, "}");
 	MultiLineTextSetLimitMax(code);
 }
+void CheckForErrors(NodeArrays& nodes, Dictionary* dict, ErrorState& errState) {
+	for (ReadNode* node : nodes.readNodes) {
+		if (node->myVarName->str.size() == 0) {
+			errState = ErrorState_emptyNode;
+			return;
+		}
+		bool correctInput = isVariable(node->myVarName->str) && correctVariableName(node->myVarName->str);
+		if (!correctInput) {
+			errState = ErrorState_incorrectVarName;
+			return;
+		}
+	}
+	for (AssignNode* node : nodes.assignNodes) {
+		if (node->myVarName->str.size() == 0 || node->expression->str.size() == 0) {
+			errState = ErrorState_emptyNode;
+			return;
+		}
+		bool correctInput = isVariable(node->myVarName->str) && correctVariableName(node->myVarName->str);
+		if (!correctInput) {
+			errState = ErrorState_incorrectVarName;
+			return;
+		}
+		int err = 0;
+		float result = evaluate(node->expression->str, dict, err);
+		if (err == -1) {
+			errState = ErrorState_incorrectMathExpression;
+			return;
+		}
+	}
+	for (WriteNode* node : nodes.writeNodes) {
+		if (node->expression->str.size() == 0) {
+			errState = ErrorState_emptyNode;
+			return;
+		}
+		int err = 0;
+		float result = evaluate(node->expression->str, dict, err);
+		if (err == -1) {
+			errState = ErrorState_incorrectMathExpression;
+			return;
+		}
+	}
+	for (DecisionNode* node : nodes.decisionNodes) {
+		if (node->expression->str.size() == 0) {
+			errState = ErrorState_emptyNode;
+			return;
+		}
+		int err = 0;
+		int result = evaluateLogicalExpression(node->expression->str, dict, err);
+		if (err == -1) {
+			errState = ErrorState_incorrectMathExpression;
+			return;
+		}
+		else if (err == -2) {
+			errState = ErrorState_incorrectLogicalExpression;
+			return;
+		}
+	}
+}
+void CheckForIncompleteScheme(NodeArrays& nodes, ErrorState& errState) {
+	using namespace std;
+	if (nodes.startNode == 0) {
+		errState = ErrorState_incompleteScheme;
+		return;
+	}
+	if (nodes.stopNodes.size() == 0) {
+		errState = ErrorState_incompleteScheme;
+		return;
+	}using namespace std;
+	queue<AnyNodeType> q;
+	vector<void*> viz;
+	q.push({ nodes.startNode, start });
+	while (!q.empty()) {
+		AnyNodeType current = q.front();
+		q.pop();
+		auto it = find(viz.begin(), viz.end(), current.address);
+		if (it == viz.end()) {
+			viz.push_back(current.address);
+		}
+		if (current.type == start) {
+			StartNode* p = ((StartNode*)current.address);
+			if (p->toPin == nullptr) {
+				errState = ErrorState_incompleteScheme;
+				return;
+			}
+			q.push({ p->toPin->ownerPtr, p->toPin->ownerType });
+		}
+		else if (current.type == write) {
+			WriteNode* p = ((WriteNode*)current.address);
+			if (p->toPin == nullptr) {
+				errState = ErrorState_incompleteScheme;
+				return;
+			}
+			auto it = find(viz.begin(), viz.end(), p->toPin->ownerPtr);
+			if (it == viz.end()) {
+				q.push({ p->toPin->ownerPtr, p->toPin->ownerType });
+			}
+		}
+		else if (current.type == read) {
+			ReadNode* p = ((ReadNode*)current.address);
+			if (p->toPin == nullptr) {
+				errState = ErrorState_incompleteScheme;
+				return;
+			}
+			auto it = find(viz.begin(), viz.end(), p->toPin->ownerPtr);
+			if (it == viz.end()) {
+				q.push({ p->toPin->ownerPtr, p->toPin->ownerType });
+			}
+		}
+		else if (current.type == assign) {
+			AssignNode* p = ((AssignNode*)current.address);
+			if (p->toPin == nullptr) {
+				errState = ErrorState_incompleteScheme;
+				return;
+			}
+			auto it = find(viz.begin(), viz.end(), p->toPin->ownerPtr);
+			if (it == viz.end()) {
+				q.push({ p->toPin->ownerPtr, p->toPin->ownerType });
+			}
+		}
+		else if (current.type == decision) {
+			DecisionNode* p = ((DecisionNode*)current.address);
+			if (p->toPinTrue == nullptr) {
+				errState = ErrorState_incompleteScheme;
+				return;
+			}if (p->toPinFalse == nullptr) {
+				errState = ErrorState_incompleteScheme;
+				return;
+			}
+			auto it1 = find(viz.begin(), viz.end(), p->toPinTrue->ownerPtr);
+			if (it1 == viz.end()) {
+				q.push({ p->toPinTrue->ownerPtr, p->toPinTrue->ownerType });
+			}
+			auto it2 = find(viz.begin(), viz.end(), p->toPinFalse->ownerPtr);
+			if (it2 == viz.end()) {
+				q.push({ p->toPinFalse->ownerPtr, p->toPinFalse->ownerType });
+			}
+		}
+	}
+	int totalNumberOfNodes = 1 + nodes.assignNodes.size() + nodes.decisionNodes.size() + nodes.readNodes.size() + nodes.stopNodes.size() + nodes.writeNodes.size();
+	if (totalNumberOfNodes != viz.size()) {
+		errState = ErrorState_incompleteScheme;
+		return;
+	}
+}

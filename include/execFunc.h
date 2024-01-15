@@ -3,6 +3,7 @@
 #include "nodeComponents.h"
 #include "dictionary.h"
 #include "multilinetext.h"
+#include "error.h"
 #include <queue>
 #include <set>
 #include <unordered_map>
@@ -29,3 +30,5 @@ void EraseNode(NodeArrays& nodes, AnyNodeType node);
 void EraseNodeLinks(NodeArrays& nodes, Pin* inPin);
 void UpdateVariablesTable(NodeArrays& nodes, Dictionary* dict);
 void EncodeScheme(MultiLineText* code, Dictionary* dict, void* startNode);
+void CheckForErrors(NodeArrays& nodes, Dictionary* dict, ErrorState& errState);
+void CheckForIncompleteScheme(NodeArrays& nodes, ErrorState& errState);

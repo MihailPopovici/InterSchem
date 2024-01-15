@@ -168,6 +168,7 @@
     <ClInclude Include="include\codeComponents.h" />
     <ClInclude Include="include\decisionNode.h" />
     <ClInclude Include="include\dictionary.h" />
+    <ClInclude Include="include\error.h" />
     <ClInclude Include="include\evalExpression.h" />
     <ClInclude Include="include\execFunc.h" />
     <ClInclude Include="include\fileFunc.h" />

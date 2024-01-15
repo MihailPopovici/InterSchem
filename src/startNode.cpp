@@ -44,7 +44,12 @@ void SetStartNodePosition(StartNode* node, int x, int y) {
 	node->outPin.y = node->y + node->height;
 }
 void DrawStartNode(StartNode* node) {
-	DrawRectangle(node->x, node->y, node->width, node->height, DARKGREEN);
+	Rectangle rec;
+	rec.x = node->x;
+	rec.y = node->y;
+	rec.width = node->width;
+	rec.height = node->height;
+	DrawRectangleRounded(rec, 1, 16, DARKGREEN);
 	DrawText("Start", node->x + node->padding, node->y + node->padding, node->fontSize, WHITE);
 	DrawCircle(node->outPin.x, node->outPin.y, node->outPin.radius, GRAY);
 	DrawLink(node->outPin, node->toPin);
