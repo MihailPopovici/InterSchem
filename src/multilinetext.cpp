@@ -196,7 +196,7 @@ void MultiLineTextDraw(MultiLineText* mtext) {
 	if (mtext->focused) {
 		// TODO: figure out how to calculate mtext->text width based on a given font
 		DrawLineV({ mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->lin - mtext->firstLin) * mtext->fontSize }, { mtext->x + mtext->padding + (mtext->col - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->lin - mtext->firstLin + 1) * mtext->fontSize }, mtext->textColor);
-		DrawLineV({ mtext->x + mtext->padding + (mtext->limCol - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->limLin - mtext->firstLin) * mtext->fontSize }, { mtext->x + mtext->padding + (mtext->limCol - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->limLin - mtext->firstLin + 1) * mtext->fontSize }, RED);
+		//DrawLineV({ mtext->x + mtext->padding + (mtext->limCol - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->limLin - mtext->firstLin) * mtext->fontSize }, { mtext->x + mtext->padding + (mtext->limCol - mtext->firstCol) * mtext->chWidth, (float)mtext->y + mtext->padding + (mtext->limLin - mtext->firstLin + 1) * mtext->fontSize }, RED);
 	}
 }
 std::vector<std::string> MultiLineTextParseText(MultiLineText* mtext, std::string strToParse) {

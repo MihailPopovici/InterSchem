@@ -105,7 +105,8 @@ int main() {
 	SetWindowPadding(createNodesWin, 5);
 	SetWindowTitle(createNodesWin, "New nodes", 32, WHITE);
 	AddElementToWindow(createNodesWin, { newNodesGrid, WindowElementType_Grid });
-	createNodesWin->visible = false;
+	//createNodesWin->visible = false;
+	WindowSetVisible(createNodesWin, true);
 
 	Dictionary* variablesDictionary = NewDictionary();
 	SetDictionaryPosition(variablesDictionary, 100, 100);

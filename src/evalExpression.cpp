@@ -43,9 +43,9 @@ float applyOp(float val1, float val2, std::string op) {
     if (op == "+") return val1 + val2;
     if (op == "-") return val1 - val2;
     if (op == "*") return val1 * val2;
-    if (op == "/") return val1 / val2;
+    if (op == "/" && val2 != 0) return val1 / val2;
     if (op == "^") return pow(val1, val2);
-    if (op == "%" && val2!=0) return (int)val1 % (int)val2;
+    if (op == "%" && val2 != 0) return (int)val1 % (int)val2;
     return -1;
 }
 float applyFunction(float val, std::string func) {
@@ -229,8 +229,7 @@ float evaluate(std::string expression, Dictionary* dict, int& err) {
             values.pop();
             std::string op = operators.top();
             operators.pop();
-
-            values.push(applyOp(val2, val1, op));
+			values.push(applyOp(val2, val1, op));
         }
     }
     return values.top();
@@ -244,7 +243,7 @@ bool isLogicalOperator(std::string s) {
     return (s == "&&" || s == "||");
 }
 bool applyLogicalOperator(float value1, std::string op, float value2) {
-    if (op == "==") return value1 == value1;
+    if (op == "==") return value1 == value2;
     if (op == "!=") return value1 != value2;
     if (op == "<=") return value1 <= value2;
     if (op == ">=") return value1 >= value2;
