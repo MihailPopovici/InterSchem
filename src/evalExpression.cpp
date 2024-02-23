@@ -1,15 +1,14 @@
 #include "evalExpression.h"
 
-//var variables[100] = { };
-//int nrOfVariables = 0;
 
 bool isFunction(std::string s) {
     if (s == "abs" || s == "sin" || s == "cos" || s == "log" || s == "sqrt") return 1;
     return 0;
 }
 bool isNumber(std::string s) {
+    if (s.size() == 1 && !(s[0] >= '0' && s[0] <= '9')) return false;
     //can contain only digits, dots and minus sign on the first index
-    if (!(s[0] >= '0' && s[0] <= '9') && s[0] != '_') return false;
+    if (!(s[0] >= '0' && s[0] <= '9') && s[0] != '-') return false;
     for (int i = 1; i < s.size(); i++) {
         if (!(s[i] >= '0' && s[i] <= '9') && s[i] != '.') return false;
     }
@@ -103,21 +102,7 @@ void CheckForUnaryMinus(std::vector<std::string>& tokens) {
         }
     }
 }
-//void AssignValues(std::vector<std::string>& tokens) {
-//    for (int i = 0; i < tokens.size(); i++) {
-//        if (isVariable(tokens[i])) {
-//            variables[nrOfVariables].name = tokens[i];
-//            std::cout << "Insert the value for \"" << tokens[i] << "\" : ";
-//            std::cin >> variables[nrOfVariables].value;
-//            nrOfVariables++;
-//        }
-//    }
-//}
-//float GetVarValue(std::string s) {
-//    for (int i = 0; i < nrOfVariables; i++) {
-//        if (variables[i].name == s) return variables[i].value;
-//    }
-//}
+
 bool CheckCorrectitude(std::vector<std::string> tokens) {
     if (nrOfPharentesis(tokens) != 0) return false;
     for (int i = 0; i < tokens.size() - 1; i++) {
@@ -146,8 +131,6 @@ float evaluate(std::string expression, Dictionary* dict, int& err) {
     }
     //check for unary operators
     CheckForUnaryMinus(tokens);
-    //assign values to variables
-    //AssignValues(tokens);
 
     for (int i = 0; i < tokens.size(); i++) {
         //if we have a number
